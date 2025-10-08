@@ -14,10 +14,10 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v1
         with:
-          app_id: ${{ secrets.GH_APP_ID }}
-          private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           owner: OP-TED
-          repository: espd-tools
+          repositories: espd-tools
 
 
       - name: Send repository dispatch to espd-tools
