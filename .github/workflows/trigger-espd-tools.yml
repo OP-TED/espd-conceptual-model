@@ -36,5 +36,5 @@ jobs:
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
-              https://api.github.com/repos/OP-TED/espd-tools/dispatches \
-            -d '{"event_type": "update_eapx"}'
+             https://api.github.com/repos/OP-TED/espd-tools/actions/workflows/update-and-extract.yml/dispatches \
+             -d '{"ref": "testingAutomation"}'
