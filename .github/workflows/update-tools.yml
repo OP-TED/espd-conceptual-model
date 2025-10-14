@@ -1,0 +1,54 @@
+name: Extract and update JSON in espd-tools
+
+on:
+  push:
+    branches:
+      - testingAutomation
+
+jobs:
+  extract-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout this repository (espd-conceptual-model)
+      - name: Checkout conceptual model
+        uses: actions/checkout@v4
+        with:
+          path: conceptual-model
+
+      # Checkout the target repository (espd-tools) and target branch
+      - name: Checkout espd-tools
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/espd-tools
+          ref: testingAutomation
+          path: EAtoJSON
+          token: ${{ secrets.TOOLS_PUSH_TOKEN }}
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Run your extraction script from conceptual-model repo
+      - name: Extract ESPD_CM.eapx to JSON
+        working-directory: espd-tools/EAtoJSON
+        run: |
+          npm ci
+          node ea2json.js extract ../../conceptual-model/conceptual-model/ESPD_CM.eapx
+          echo "Extraction completed."
+
+      # 5️⃣ Commit and push changes to espd-tools
+      - name: Commit and push to espd-tools
+        working-directory: espd-tools
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ `git status --porcelain` ]]; then
+            git add EAtoJSON/ESPD_CM.json
+            git commit -m "Auto-update ESPD_CM.json from conceptual-model"
+            git push origin testingAutomation
+          else
+            echo "No changes to commit"
+          fi
