@@ -22,7 +22,7 @@ jobs:
         with:
           repository: OP-TED/espd-tools
           ref: testingAutomation
-          path: EAtoJSON
+          path:  espd-tools
           token: ${{ secrets.TOOLS_PUSH_TOKEN }}
 
       # Set up Node.js environment
@@ -33,7 +33,7 @@ jobs:
 
       # Run your extraction script from conceptual-model repo
       - name: Extract ESPD_CM.eapx to JSON
-        working-directory: ../../espd-tools/EAtoJSON
+        working-directory: espd-tools/EAtoJSON
         run: |
           npm ci
           node ea2json.js extract ../../conceptual-model/conceptual-model/ESPD_CM.eapx
