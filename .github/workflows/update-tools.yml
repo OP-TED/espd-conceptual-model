@@ -25,6 +25,15 @@ jobs:
           path:  espd-tools
           token: ${{ secrets.TOOLS_PUSH_TOKEN }}
 
+      # Checkout the target repository (espd-demo repo) and target branch
+      - name: Checkout espd-demo
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/espd-demo
+          ref: testingAutomation
+          path: espd-demo
+          token: ${{ secrets.TOOLS_PUSH_TOKEN }}
+
       # Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -39,7 +48,7 @@ jobs:
           node ea2json.js extract ../../conceptual-model/conceptual-model/ESPD_CM.eapx
           echo "Extraction completed."
 
-      # 5️⃣ Commit and push changes to espd-tools
+      # Commit and push changes to espd-tools
       - name: Commit and push to espd-tools
         working-directory: espd-tools
         run: |
@@ -51,4 +60,25 @@ jobs:
             git push origin testingAutomation
           else
             echo "No changes to commit"
+          fi
+
+      # Copy ESPD_CM.json into espd-demo/ESPD/model/
+      - name: Copy JSON into espd-demo
+        run: |
+          mkdir -p espd-demo/ESPD/model
+          cp espd-tools/EAtoJSON/ESPD_CM.json espd-demo/ESPD/model/ESPD_CM.json
+          echo "Copied ESPD_CM.json into espd-demo/ESPD/model"
+
+      # Commit and push to espd-demo
+      - name: Commit and push to espd-demo
+        working-directory: espd-demo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ `git status --porcelain` ]]; then
+            git add ESPD/model/ESPD_CM.json
+            git commit -m "Auto-update ESPD_CM.json from espd-tools"
+            git push origin testingAutomation
+          else
+            echo "No changes to commit in espd-demo"
           fi
