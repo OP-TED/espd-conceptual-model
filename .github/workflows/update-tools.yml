@@ -41,11 +41,11 @@ jobs:
           node-version: '20'
 
       # Run your extraction script from conceptual-model repo
-      - name: Extract ESPD_CM.eapx to JSON
+      - name: Extract files
         working-directory: espd-tools/EAtoJSON
         run: |
           npm ci
-          node ea2json.js extract ../../conceptual-model/conceptual-model/ESPD_CM.eapx
+          node export.js all -o ../../conceptual-model/conceptual-model/ESPD_CM.eapx
           echo "Extraction completed."
 
       # Commit and push changes to espd-tools
@@ -62,23 +62,23 @@ jobs:
             echo "No changes to commit"
           fi
 
-      # Copy ESPD_CM.json into espd-demo/ESPD/model/
-      - name: Copy JSON into espd-demo
-        run: |
-          mkdir -p espd-demo/ESPD/model
-          cp espd-tools/EAtoJSON/ESPD_CM.json espd-demo/ESPD/model/ESPD_CM.json
-          echo "Copied ESPD_CM.json into espd-demo/ESPD/model"
+      # # Copy ESPD_CM.json into espd-demo/ESPD/model/
+      # - name: Copy JSON into espd-demo
+      #   run: |
+      #     mkdir -p espd-demo/ESPD/model
+      #     cp espd-tools/EAtoJSON/ESPD_CM.json espd-demo/ESPD/model/ESPD_CM.json
+      #     echo "Copied ESPD_CM.json into espd-demo/ESPD/model"
 
-      # Commit and push to espd-demo
-      - name: Commit and push to espd-demo
-        working-directory: espd-demo
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [[ `git status --porcelain` ]]; then
-            git add ESPD/model/ESPD_CM.json
-            git commit -m "Auto-update ESPD_CM.json from espd-tools"
-            git push origin testingAutomation
-          else
-            echo "No changes to commit in espd-demo"
-          fi
+      # # Commit and push to espd-demo
+      # - name: Commit and push to espd-demo
+      #   working-directory: espd-demo
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     if [[ `git status --porcelain` ]]; then
+      #       git add ESPD/model/ESPD_CM.json
+      #       git commit -m "Auto-update ESPD_CM.json from espd-tools"
+      #       git push origin testingAutomation
+      #     else
+      #       echo "No changes to commit in espd-demo"
+      #     fi
