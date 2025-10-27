@@ -45,7 +45,7 @@ jobs:
         working-directory: espd-tools/EAtoJSON
         run: |
           npm ci
-          node export.js all -o ../../conceptual-model/conceptual-model/ESPD_CM.eapx
+          node export.js all -o ./ESPD_CM.json
           echo "Extraction completed."
 
       # Commit and push changes to espd-tools

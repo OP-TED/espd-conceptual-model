@@ -20,7 +20,7 @@ jobs:
           repository: OP-TED/espd-tools
           ref: testingAutomation
           path: espd-tools
-          token: ${{ secrets.TOOLS_PUSH_TOKEN }}
+          token: ${{ secrets.EDM_PUSH_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -42,7 +42,7 @@ jobs:
         with:
           repository: OP-TED/ESPD-EDM
           path: espd-edm
-          token: ${{ secrets.TOOLS_PUSH_TOKEN }}
+          token: ${{ secrets.EDM_PUSH_TOKEN }}
 
       - name: Create/switch to automationTesting
         working-directory: espd-edm
