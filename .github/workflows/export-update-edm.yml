@@ -1,0 +1,91 @@
+name: Export & publish to ESPD-EDM
+
+on:
+  push:
+    branches:
+      - testingAutomation
+
+jobs:
+  export-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout conceptual model (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: conceptual-model
+
+      - name: Checkout espd-tools
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/espd-tools
+          ref: testingAutomation
+          path: espd-tools
+          token: ${{ secrets.TOOLS_PUSH_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run exporter (criteria + code lists)
+        working-directory: espd-tools/EAtoJSON
+        run: |
+          npm ci
+          # IMPORTANT: first arg is the EA file, -o is the OUTPUT DIRECTORY
+          node export.js all ../../conceptual-model/conceptual-model/ESPD_CM.eapx -o outputs
+          echo "---- Export tree ----"
+          ls -R1 outputs || true
+          test -f outputs/espd-edm.json
+
+      - name: Checkout ESPD-EDM
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/ESPD-EDM
+          path: espd-edm
+          token: ${{ secrets.TOOLS_PUSH_TOKEN }}
+
+      - name: Create/switch to automationTesting
+        working-directory: espd-edm
+        run: |
+          git fetch origin
+          if git rev-parse --verify origin/automationTesting >/dev/null 2>&1; then
+            git checkout automationTesting
+          else
+            git checkout -b automationTesting
+          fi
+
+      - name: Copy results into final folders
+        run: |
+          # ensure target folders exist
+          mkdir -p espd-edm/conceptual-model
+          mkdir -p espd-edm/codelists/gc
+
+          # copy the JSON
+          cp espd-tools/EAtoJSON/outputs/espd-edm.json espd-edm/conceptual-model/espd-edm.json
+
+          # copy/update all .gc code lists
+          if [ -d "espd-tools/EAtoJSON/outputs/code-lists" ]; then
+            find espd-tools/EAtoJSON/outputs/code-lists -type f -name '*.gc' -print0 | xargs -0 -I{} cp "{}" espd-edm/codelists/gc/
+          fi
+
+          echo "Copied:"
+          ls -1 espd-edm/conceptual-model/espd-edm.json
+          ls -1 espd-edm/codelists/gc/*.gc | head -n 20 || true
+
+      # make the codelists/gc folder mirror the export exactly (including deletions)
+      # - name: Mirror codelists/gc exactly (dangerous - will delete extras)
+      #   run: |
+      #     rsync -a --delete espd-tools/EAtoJSON/outputs/code-lists/ espd-edm/codelists/gc/
+
+      - name: Commit and push to ESPD-EDM@automationTesting
+        working-directory: espd-edm
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ $(git status --porcelain) ]]; then
+            git add conceptual-model/espd-edm.json codelists/gc/*.gc
+            git commit -m "Automation: update espd-edm.json and codelists (.gc) from espd-tools export.js"
+            git push origin automationTesting
+          else
+            echo "No changes to commit in ESPD-EDM"
+          fi
