@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - testingAutomation
+  workflow_dispatch:
 
 jobs:
   export-and-publish:
