@@ -44,14 +44,14 @@ jobs:
           path: espd-edm
           token: ${{ secrets.EDM_PUSH_TOKEN }}
 
-      - name: Create/switch to automationTesting
+      - name: Create/switch to testingAutomation
         working-directory: espd-edm
         run: |
           git fetch origin
-          if git rev-parse --verify origin/automationTesting >/dev/null 2>&1; then
-            git checkout automationTesting
+          if git rev-parse --verify origin/testingAutomation >/dev/null 2>&1; then
+            git checkout testingAutomation
           else
-            git checkout -b automationTesting
+            git checkout -b testingAutomation
           fi
 
       - name: Copy results into final folders
@@ -77,7 +77,7 @@ jobs:
       #   run: |
       #     rsync -a --delete espd-tools/EAtoJSON/outputs/code-lists/ espd-edm/codelists/gc/
 
-      - name: Commit and push to ESPD-EDM@automationTesting
+      - name: Commit and push to ESPD-EDM@testingAutomation
         working-directory: espd-edm
         run: |
           git config user.name "github-actions[bot]"
@@ -85,7 +85,7 @@ jobs:
           if [[ $(git status --porcelain) ]]; then
             git add conceptual-model/espd-edm.json codelists/gc/*.gc
             git commit -m "Automation: update espd-edm.json and codelists (.gc) from espd-tools export.js"
-            git push origin automationTesting
+            git push origin testingAutomation
           else
             echo "No changes to commit in ESPD-EDM"
           fi
