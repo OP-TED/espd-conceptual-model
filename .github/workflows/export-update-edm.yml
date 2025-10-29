@@ -2,20 +2,13 @@ name: Export & publish to ESPD-EDM
 
 on:        # run on pushes to any branch
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to run on (used across all repos)'
-        required: true
-        default: 'develop'
+
+env:
+  RUN_BRANCH: ${{ github.ref_name }}
 
 jobs:
   export-and-publish:
     runs-on: ubuntu-latest
-
-    # Pick the branch: on push = github.ref_name, on manual = inputs.branch
-    env:
-      RUN_BRANCH: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }}
-
     steps:
       - name: Show chosen branch
         run: echo "RUN_BRANCH=${RUN_BRANCH}"
