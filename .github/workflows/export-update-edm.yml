@@ -1,0 +1,94 @@
+name: Export & publish to ESPD-EDM
+
+on:        # run on pushes to any branch
+  workflow_dispatch:
+
+env:
+  RUN_BRANCH: ${{ github.ref_name }}
+
+jobs:
+  export-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show chosen branch
+        run: echo "RUN_BRANCH=${RUN_BRANCH}"
+
+      - name: Checkout conceptual model (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: conceptual-model
+
+      - name: Checkout espd-tools
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/espd-tools
+          ref: testingAutomation # TODO change to main once everything is merged
+          path: espd-tools
+          token: ${{ secrets.EDM_PUSH_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run exporter (criteria + code lists)
+        working-directory: espd-tools/EAtoJSON
+        run: |
+          npm ci
+          node export.js all ../../conceptual-model/conceptual-model/ESPD_CM.eapx -o outputs
+          echo "---- Export tree ----"
+          ls -R1 outputs || true
+          test -f outputs/espd-edm.json
+
+      - name: Checkout ESPD-EDM
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/ESPD-EDM
+          path: espd-edm
+          token: ${{ secrets.EDM_PUSH_TOKEN }}
+
+      - name: Switch/Create branch in ESPD-EDM
+        working-directory: espd-edm
+        run: |
+          git fetch origin
+          if git rev-parse --verify origin/${RUN_BRANCH} >/dev/null 2>&1; then
+            git checkout ${RUN_BRANCH}
+          else
+            git checkout -b ${RUN_BRANCH}
+          fi
+
+      - name: Copy results into final folders
+        run: |
+          # ensure target folders exist
+          mkdir -p espd-edm/criterion
+          mkdir -p espd-edm/codelists
+
+          # copy the JSON
+          cp espd-tools/EAtoJSON/outputs/espd-edm.json espd-edm/criterion/espd-edm.json
+
+          # copy/update all .gc code lists
+          if [ -d "espd-tools/EAtoJSON/outputs/code-lists" ]; then
+            find espd-tools/EAtoJSON/outputs/code-lists -type f -name '*.gc' -print0 | xargs -0 -I{} cp "{}" espd-edm/codelists
+          fi
+
+          echo "Copied:"
+          ls -1 espd-edm/criterion/espd-edm.json
+          ls -1 espd-edm/codelists/*.gc | head -n 20 || true
+
+        # make the codelists/gc folder mirror the export exactly (including deletions)
+        # - name: Mirror codelists/gc exactly (dangerous - will delete extras)
+        #   run: |
+        #     rsync -a --delete espd-tools/EAtoJSON/outputs/code-lists/ espd-edm/codelists/gc/
+
+      - name: Commit and push to ESPD-EDM@${{ env.RUN_BRANCH }}
+        working-directory: espd-edm
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ $(git status --porcelain) ]]; then
+            git add criterion/espd-edm.json codelists/*.gc
+            git commit -m "Automation: update espd-edm.json and codelists (.gc) from espd-tools export.js [branch: ${RUN_BRANCH}]"
+            git push origin ${RUN_BRANCH}
+          else
+            echo "No changes to commit in ESPD-EDM"
+          fi
