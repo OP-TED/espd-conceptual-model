@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: OP-TED/espd-tools
-          ref: testingAutomation # TODO change to main once everything is merged
+          ref: main
           path: espd-tools
           token: ${{ secrets.EDM_PUSH_TOKEN }}
 
@@ -81,6 +81,7 @@ jobs:
         #     rsync -a --delete espd-tools/EAtoJSON/outputs/code-lists/ espd-edm/codelists/gc/
 
       - name: Commit and push to ESPD-EDM@${{ env.RUN_BRANCH }}
+        if: github.ref != 'refs/heads/main' # only push changes if not on main branch
         working-directory: espd-edm
         run: |
           git config user.name "github-actions[bot]"
