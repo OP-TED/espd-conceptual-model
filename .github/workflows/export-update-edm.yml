@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: OP-TED/espd-tools
-          ref: main
+          ref: bugfix/errorInExportCriteria
           path: espd-tools
           token: ${{ secrets.EDM_PUSH_TOKEN }}
 
