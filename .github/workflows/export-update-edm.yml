@@ -35,7 +35,7 @@ jobs:
         working-directory: espd-tools/EAtoJSON
         run: |
           npm ci
-          node export.js all ../../conceptual-model/conceptual-model/ESPD_CM.eapx -o outputs
+          node export.js code-lists ../../conceptual-model/conceptual-model/ESPD_CM.eapx -o outputs
           echo "---- Export tree ----"
           ls -R1 outputs || true
           test -f outputs/espd-edm.json
