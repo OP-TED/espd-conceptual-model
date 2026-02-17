@@ -69,11 +69,15 @@ jobs:
           # copy/update all .gc code lists
           if [ -d "espd-tools/EAtoJSON/outputs/code-lists" ]; then
             find espd-tools/EAtoJSON/outputs/code-lists -type f -name '*.gc' -print0 | xargs -0 -I{} cp "{}" espd-edm/codelists
+          
+            if [ -f "espd-tools/EAtoJSON/outputs/code-lists/codelists.json" ]; then
+              cp espd-tools/EAtoJSON/outputs/code-lists/codelists.json espd-edm/codelists/
+            fi
           fi
 
           echo "Copied:"
           ls -1 espd-edm/criterion/espd-edm.json
-          ls -1 espd-edm/codelists/*.gc | head -n 20 || true
+          ls -1 espd-edm/codelists | head -n 20 || true
 
         # make the codelists/gc folder mirror the export exactly (including deletions)
         # - name: Mirror codelists/gc exactly (dangerous - will delete extras)
@@ -87,7 +91,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if [[ $(git status --porcelain) ]]; then
-            git add criterion/espd-edm.json codelists/*.gc
+            git add criterion/espd-edm.json codelists/*.gc codelists/codelists.json
             git commit -m "Automation: update espd-edm.json and codelists (.gc) from espd-tools export.js [branch: ${RUN_BRANCH}]"
             git push origin ${RUN_BRANCH}
           else
