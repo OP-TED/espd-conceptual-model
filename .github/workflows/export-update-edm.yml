@@ -25,6 +25,23 @@ jobs:
           echo "RUN_BRANCH=${RUN_BRANCH}"
           echo "ESPD_TOOLS_REF=${ESPD_TOOLS_REF}"
 
+      # Mints a short-lived installation token for the two repositories this
+      # workflow touches: espd-tools (read, the exporter source) and ESPD-EDM
+      # (read and write, the publication target). Replaces the EDM_PUSH_TOKEN
+      # PAT, which was tied to an individual account and stopped resolving -
+      # actions/checkout then fell back to no credentials and failed with
+      # "could not read Username for 'https://github.com'".
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.EDM_APP_ID }}
+          private-key: ${{ secrets.EDM_APP_PRIVATE_KEY }}
+          owner: OP-TED
+          repositories: |
+            espd-tools
+            ESPD-EDM
+
       - name: Checkout conceptual model (this repo)
         uses: actions/checkout@v4
         with:
@@ -36,7 +53,7 @@ jobs:
           repository: OP-TED/espd-tools
           ref: ${{ inputs.espd_tools_ref }}
           path: espd-tools
-          token: ${{ secrets.EDM_PUSH_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -57,7 +74,7 @@ jobs:
         with:
           repository: OP-TED/ESPD-EDM
           path: espd-edm
-          token: ${{ secrets.EDM_PUSH_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Switch/Create branch in ESPD-EDM
         working-directory: espd-edm
