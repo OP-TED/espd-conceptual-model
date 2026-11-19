@@ -22,10 +22,21 @@ on:
         default: 'develop'
         type: string
       edm_branch:
-        description: 'ESPD-EDM branch to publish to. Leave empty to use the branch this workflow runs from.'
+        description: 'ESPD-EDM branch to publish to (never main). Leave empty to use the branch this workflow runs from.'
         required: false
         default: ''
         type: string
+
+# The GitHub App token does all the cross-repository work; the built-in token
+# only needs to read this repository.
+permissions:
+  contents: read
+
+# One publication per ESPD-EDM branch at a time, so two dispatches cannot race
+# on the push. Queued rather than cancelled: each run publishes a specific ref.
+concurrency:
+  group: publish-validation-${{ inputs.edm_branch || github.ref_name }}
+  cancel-in-progress: false
 
 env:
   RUN_BRANCH: ${{ github.ref_name }}
@@ -35,14 +46,32 @@ jobs:
   publish-validation:
     runs-on: ubuntu-latest
     steps:
-      - name: Show inputs
+      # Decides the target before any work is done. The guard is on the
+      # ESPD-EDM branch being written, not on the branch this workflow runs
+      # from: the two differ whenever edm_branch is given, so a check on
+      # github.ref would let a run from release/5.0.0 with edm_branch=main
+      # publish to ESPD-EDM main. Running from main with no edm_branch targets
+      # main too, and is refused here rather than doing the work and skipping
+      # the push.
+      - name: Resolve the ESPD-EDM target branch
         env:
           INPUT_EDM_BRANCH: ${{ inputs.edm_branch }}
         run: |
+          target="${INPUT_EDM_BRANCH:-${RUN_BRANCH}}"
+          target="${target#refs/heads/}"
           echo "RUN_BRANCH=${RUN_BRANCH}"
           echo "VALIDATION_REF=${VALIDATION_REF}"
-          echo "EDM_BRANCH=${INPUT_EDM_BRANCH:-${RUN_BRANCH}}"
-          echo "EDM_BRANCH=${INPUT_EDM_BRANCH:-${RUN_BRANCH}}" >> "${GITHUB_ENV}"
+          echo "EDM_BRANCH=${target}"
+
+          if ! git check-ref-format --branch "${target}" >/dev/null 2>&1; then
+            echo "::error::\"${target}\" is not a valid branch name."
+            exit 1
+          fi
+          if [[ "${target}" == "main" ]]; then
+            echo "::error::Refusing to publish to ESPD-EDM main. Give edm_branch a release or feature branch."
+            exit 1
+          fi
+          echo "EDM_BRANCH=${target}" >> "${GITHUB_ENV}"
 
       # Read on espd-validation-schematron (the source of the XSLs) and
       # read/write on ESPD-EDM (the publication target). Same GitHub App as the
@@ -82,11 +111,13 @@ jobs:
         working-directory: espd-edm
         run: |
           git fetch origin
-          if ! git rev-parse --verify "origin/${EDM_BRANCH}" >/dev/null 2>&1; then
+          if ! git rev-parse --verify --quiet "refs/remotes/origin/${EDM_BRANCH}" >/dev/null; then
             echo "::error::ESPD-EDM has no branch \"${EDM_BRANCH}\". Create it from the right release branch first."
             exit 1
           fi
-          git checkout "${EDM_BRANCH}"
+          # -B with an explicit start point, so a branch name that matches a
+          # path cannot be read as one.
+          git checkout -B "${EDM_BRANCH}" "origin/${EDM_BRANCH}"
 
       # Each entry is "folder:file pattern", the same folder name on both sides:
       # espd-validation-schematron/ESPDRequest/xsl -> ESPD-EDM/validation/ESPDRequest/xsl.
@@ -115,18 +146,29 @@ jobs:
             fi
           done
 
+          # Mirrored folder by folder. A folder that ends up with fewer files
+          # than it had is reported as a warning: it is legitimate when rules
+          # are removed upstream, and it is also what a partial source looks
+          # like, so it should never go by unnoticed.
           for entry in "${sets[@]}"; do
             folder="${entry%%:*}"; pattern="${entry#*:}"
             source="espd-validation-schematron/${folder}"
             target="espd-edm/validation/${folder}"
+            before=0
+            if [[ -d "${target}" ]]; then
+              before="$(find "${target}" -maxdepth 1 -type f | wc -l)"
+            fi
             rm -rf "${target}"
             mkdir -p "${target}"
             find "${source}" -maxdepth 1 -type f -name "${pattern}" -exec cp {} "${target}/" \;
-            echo "validation/${folder}: $(find "${target}" -type f | wc -l) ${pattern} file(s)"
+            after="$(find "${target}" -maxdepth 1 -type f | wc -l)"
+            echo "validation/${folder}: ${before} -> ${after} ${pattern} file(s)"
+            if (( after < before )); then
+              echo "::warning::validation/${folder} goes from ${before} to ${after} files. Check that espd-validation-schematron@${VALIDATION_REF} is complete."
+            fi
           done
 
       - name: Commit and push to ESPD-EDM@${{ env.EDM_BRANCH }}
-        if: github.ref != 'refs/heads/main' # only push changes if not on main branch
         working-directory: espd-edm
         run: |
           git config user.name "github-actions[bot]"
@@ -136,8 +178,18 @@ jobs:
           git add -A validation/common validation/ESPDRequest validation/ESPDResponse
           if git diff --cached --quiet; then
             echo "No changes to commit in ESPD-EDM"
-          else
-            git diff --cached --name-status
-            git commit -m "Automation: update validation files from espd-validation-schematron@${VALIDATION_REF}"
-            git push origin "${EDM_BRANCH}"
+            exit 0
           fi
+
+          git diff --cached --name-status
+          git diff --cached --name-status --diff-filter=D | while read -r _ path; do
+            echo "::warning::Removing ${path}"
+          done
+
+          # The ref can be a moving name such as develop, so the commit records
+          # the exact commit it was published from.
+          source_sha="$(git -C ../espd-validation-schematron rev-parse HEAD)"
+          git commit \
+            -m "Automation: update validation files from espd-validation-schematron@${source_sha:0:7}" \
+            -m "Source: OP-TED/espd-validation-schematron@${source_sha} (ref ${VALIDATION_REF})"
+          git push origin "HEAD:refs/heads/${EDM_BRANCH}"
