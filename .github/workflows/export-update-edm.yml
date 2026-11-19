@@ -3,14 +3,20 @@ name: Export & publish to ESPD-EDM
 on:
   workflow_dispatch:
     inputs:
+      # Free text rather than a main/develop choice, so a release export can
+      # pin an immutable tag or SHA, and a change to the exporter can be run
+      # before it is merged. The version gates below need an espd-tools ref
+      # that has check-versions, verify-export and npm test.
       espd_tools_ref:
-        description: 'espd-tools branch to use as the exporter input'
+        description: 'espd-tools ref to use as the exporter (branch, tag or SHA)'
         required: true
-        default: 'main'
-        type: choice
-        options:
-          - main
-          - develop
+        default: 'develop'
+        type: string
+      expected_version:
+        description: 'ESPD version being built (e.g. 5.0.0). Leave empty on a release/X.Y.Z branch to derive it from the branch name.'
+        required: false
+        default: ''
+        type: string
 
 env:
   RUN_BRANCH: ${{ github.ref_name }}
@@ -60,14 +66,49 @@ jobs:
         with:
           node-version: '20'
 
+      # Every gate below is implemented in .github/scripts/version-gate.sh, so
+      # the checks can be read in one place and run by hand before a release
+      # export is dispatched. EXPECTED_VERSION is written to the job
+      # environment here and consumed by each later gate.
+      - name: Resolve the expected ESPD version
+        id: version
+        env:
+          INPUT_EXPECTED_VERSION: ${{ inputs.expected_version }}
+        run: bash conceptual-model/.github/scripts/version-gate.sh resolve
+
+      - name: Install exporter dependencies
+        working-directory: espd-tools/EAtoJSON
+        run: npm ci
+
+      # The gates are only worth their exit codes if they work, so the
+      # exporter's own consistency tests run first.
+      - name: Self-test the version gate
+        run: bash conceptual-model/.github/scripts/version-gate.sh self-test
+
+      # Fails before anything is written if the model's versions disagree with
+      # each other or with the release being built. This is the check that would
+      # have caught codelists.json going out as 5.0.0-alpha.2 while every code
+      # list in the same model declared 5.0.0.
+      - name: Check versions declared in the conceptual model
+        run: bash conceptual-model/.github/scripts/version-gate.sh check-model
+
       - name: Run exporter (criteria + code lists)
         working-directory: espd-tools/EAtoJSON
         run: |
-          npm ci
-          node export.js all ../../conceptual-model/conceptual-model/ESPD_CM.eapx -o outputs
+          if [[ -n "${EXPECTED_VERSION}" ]]; then
+            node export.js all ../../conceptual-model/conceptual-model/ESPD_CM.eapx -o outputs --expect-version "${EXPECTED_VERSION}"
+          else
+            node export.js all ../../conceptual-model/conceptual-model/ESPD_CM.eapx -o outputs
+          fi
           echo "---- Export tree ----"
           ls -R1 outputs || true
           test -f outputs/espd-edm.json
+
+      # Re-checks the generated files as a consumer would, with no access to the
+      # model: document version against every .gc, index against the folder
+      # contents, and the canonical ordering that keeps the diff reviewable.
+      - name: Verify exported code lists
+        run: bash conceptual-model/.github/scripts/version-gate.sh verify-output
 
       - name: Checkout ESPD-EDM
         uses: actions/checkout@v4
@@ -112,6 +153,13 @@ jobs:
         # - name: Mirror codelists/gc exactly (dangerous - will delete extras)
         #   run: |
         #     rsync -a --delete espd-tools/EAtoJSON/outputs/code-lists/ espd-edm/codelists/gc/
+
+      # Last gate before the push: the files exactly as they will be committed,
+      # in their ESPD-EDM layout. Catches anything the copy step introduced -
+      # a stale .gc left behind from an earlier release, or a ublVersion that no
+      # longer matches the UBL schemas actually shipped in schemas/.
+      - name: Verify ESPD-EDM working tree before committing
+        run: bash conceptual-model/.github/scripts/version-gate.sh verify-edm
 
       - name: Commit and push to ESPD-EDM@${{ env.RUN_BRANCH }}
         if: github.ref != 'refs/heads/main' # only push changes if not on main branch
