@@ -1,0 +1,125 @@
+name: Publish validation files to ESPD-EDM
+
+# Separate from "Export & publish to ESPD-EDM" on purpose: the validation files
+# are produced by a Windows-only Schematron pipeline in
+# espd-validation-schematron, on its own cadence, and have nothing to do with
+# the EA model export. Keeping them apart means a validation update does not
+# re-export the model, and a model export does not republish stale XSLs.
+#
+# Publishes the layout ESPD-EDM/validation/README.md documents:
+#   common/cva (*.cva), common/sch (*.sch),
+#   ESPDRequest/sch (*.sch), ESPDRequest/xsl (*.xsl),
+#   ESPDResponse/sch (*.sch), ESPDResponse/xsl (*.xsl).
+# The list itself lives in .github/scripts/version-gate.sh (VALIDATION_SETS).
+# The Saxon/xjparse libraries, the sample XML, the XSDs and the generic
+# common/xsl tooling stay in the schematron repository.
+
+on:
+  workflow_dispatch:
+    inputs:
+      validation_ref:
+        description: 'espd-validation-schematron ref to publish from (branch, tag or SHA). Pin a tag or SHA for a release.'
+        required: true
+        default: 'develop'
+        type: string
+      edm_branch:
+        description: 'ESPD-EDM branch to publish to. Leave empty to use the branch this workflow runs from.'
+        required: false
+        default: ''
+        type: string
+
+env:
+  RUN_BRANCH: ${{ github.ref_name }}
+  VALIDATION_REF: ${{ inputs.validation_ref }}
+
+jobs:
+  publish-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show inputs
+        env:
+          INPUT_EDM_BRANCH: ${{ inputs.edm_branch }}
+        run: |
+          echo "RUN_BRANCH=${RUN_BRANCH}"
+          echo "VALIDATION_REF=${VALIDATION_REF}"
+          echo "EDM_BRANCH=${INPUT_EDM_BRANCH:-${RUN_BRANCH}}"
+          echo "EDM_BRANCH=${INPUT_EDM_BRANCH:-${RUN_BRANCH}}" >> "${GITHUB_ENV}"
+
+      # Read on espd-validation-schematron (the source of the XSLs) and
+      # read/write on ESPD-EDM (the publication target). Same GitHub App as the
+      # export workflow; espd-validation-schematron has to be in the
+      # installation's repository list or actions/checkout falls back to no
+      # credentials and fails with "could not read Username".
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.EDM_APP_ID }}
+          private-key: ${{ secrets.EDM_APP_PRIVATE_KEY }}
+          owner: OP-TED
+          repositories: |
+            espd-validation-schematron
+            ESPD-EDM
+
+      # This repository, for .github/scripts/version-gate.sh.
+      - name: Checkout conceptual model (this repo)
+        uses: actions/checkout@v4
+        with:
+          path: conceptual-model
+
+      - name: Checkout espd-validation-schematron
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/espd-validation-schematron
+          ref: ${{ inputs.validation_ref }}
+          path: espd-validation-schematron
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Checkout ESPD-EDM
+        uses: actions/checkout@v4
+        with:
+          repository: OP-TED/ESPD-EDM
+          path: espd-edm
+          token: ${{ steps.app-token.outputs.token }}
+
+      # The target branch has to exist already. Creating it here would base it
+      # on ESPD-EDM's default branch, which carries a different release's
+      # layout, and the validation files would land on the wrong content.
+      - name: Switch to the ESPD-EDM branch
+        working-directory: espd-edm
+        run: |
+          git fetch origin
+          if ! git rev-parse --verify "origin/${EDM_BRANCH}" >/dev/null 2>&1; then
+            echo "::error::ESPD-EDM has no branch \"${EDM_BRANCH}\". Create it from the right release branch first."
+            exit 1
+          fi
+          git checkout "${EDM_BRANCH}"
+
+      # The folder list lives in version-gate.sh (VALIDATION_SETS), shared by
+      # the copy and the check so the two cannot drift. Every source folder is
+      # checked before anything in ESPD-EDM is cleared.
+      - name: Copy the validation files into ESPD-EDM
+        run: bash conceptual-model/.github/scripts/version-gate.sh copy-validation
+
+      # Checks every folder arrived, that nothing outside its file pattern did,
+      # and that ESPD-EDM now holds exactly the set the schematron repository
+      # produced.
+      - name: Verify the published validation files
+        run: bash conceptual-model/.github/scripts/version-gate.sh verify-validation
+
+      - name: Commit and push to ESPD-EDM@${{ env.EDM_BRANCH }}
+        if: github.ref != 'refs/heads/main' # only push changes if not on main branch
+        working-directory: espd-edm
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # -A so that files removed upstream are staged as deletions. Scoped to
+          # the published folders, so validation/README.md is never touched.
+          git add -A validation/common validation/ESPDRequest validation/ESPDResponse
+          if git diff --cached --quiet; then
+            echo "No changes to commit in ESPD-EDM"
+          else
+            git diff --cached --name-status
+            git commit -m "Automation: update validation files from espd-validation-schematron@${VALIDATION_REF}"
+            git push origin "${EDM_BRANCH}"
+          fi
