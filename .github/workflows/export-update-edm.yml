@@ -3,14 +3,14 @@ name: Export & publish to ESPD-EDM
 on:
   workflow_dispatch:
     inputs:
+      # Free text rather than a main/develop choice, so a release export can
+      # pin a tag or SHA, and an exporter change can be run before it is
+      # merged. The default stays main, as before.
       espd_tools_ref:
-        description: 'espd-tools branch to use as the exporter input'
+        description: 'espd-tools ref to use as the exporter input (branch, tag or SHA). 5.0.0 exports need develop.'
         required: true
         default: 'main'
-        type: choice
-        options:
-          - main
-          - develop
+        type: string
 
 env:
   RUN_BRANCH: ${{ github.ref_name }}
