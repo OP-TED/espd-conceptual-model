@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/encoding-profile.schema.json",
+  "title": "XML encoding profile",
+  "description": "registries/encoding-profile.json. Conventions keyed by structural kind (criterion, group, subgroup, leaf) describing the UBL element scaffold generated for each.",
+  "type": "object",
+  "required": ["kinds"],
+  "properties": {
+    "kinds": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["element"],
+        "properties": {
+          "element": { "type": "string" },
+          "sameAs": { "type": "string", "description": "Reuse another kind's children." },
+          "children": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "element": { "type": "string" },
+                "fromCore": { "type": "string" },
+                "map": { "type": "object" },
+                "codelist": { "type": "string" },
+                "valueBinding": { "type": "string" }
+              },
+              "anyOf": [
+                { "type": "object", "required": ["element"], "properties": { "element": true } },
+                { "type": "object", "required": ["valueBinding"], "properties": { "valueBinding": true } }
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}

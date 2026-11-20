@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/scheme-agency-profile.schema.json",
+  "title": "Scheme-agency profile",
+  "description": "registries/scheme-agency-profile.json. Single source of truth for the UBL @schemeAgencyID derived on party/reference cbc:ID elements (BR-OTH-02). TODO: review the policy with the ESPD profile owners.",
+  "type": "object",
+  "required": ["profiles"],
+  "properties": {
+    "profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["default"],
+        "properties": {
+          "default": { "type": "string", "minLength": 1 },
+          "map": { "type": "object", "additionalProperties": { "type": "string", "minLength": 1 } }
+        },
+        "patternProperties": { "^\\$": {} },
+        "additionalProperties": false
+      }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}

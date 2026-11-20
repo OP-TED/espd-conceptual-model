@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/value-types.schema.json",
+  "title": "Value-type registry",
+  "description": "registries/value-types.json. One entry per ValueDataTypeCode (the authoritative code set is ESPD-EDM/codelists/ResponseDataType.gc): the JSON instance shape and the request/response UBL value bindings.",
+  "type": "object",
+  "required": ["source", "valueTypes"],
+  "properties": {
+    "source": {
+      "type": "object",
+      "required": ["path", "shortName", "version"],
+      "properties": {
+        "path": { "type": "string", "description": "Relative path to ResponseDataType.gc (resolved by the compiler; to be replaced by an explicit input)." },
+        "shortName": { "type": "string" },
+        "version": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "valueTypes": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/definitions/valueType" }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false,
+  "definitions": {
+    "xmlBinding": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["scalar", "repeatedProperty", "amount", "object", "reference"] },
+        "element": { "type": "string" },
+        "attributes": { "type": "object" },
+        "codelist": { "type": "string" },
+        "codelistFromLeaf": { "type": "boolean" },
+        "text": { "type": "object" },
+        "fields": {},
+        "key": {},
+        "target": {}
+      },
+      "additionalProperties": false
+    },
+    "valueType": {
+      "type": "object",
+      "required": ["instanceShape"],
+      "properties": {
+        "sourceDescription": { "type": "string" },
+        "instanceShape": { "type": "object", "required": ["type"], "properties": { "type": { "enum": ["string", "number", "integer", "boolean", "object", "array"] } } },
+        "instanceConstraints": { "type": "object" },
+        "requestXml": { "$ref": "#/definitions/xmlBinding" },
+        "responseXml": { "$ref": "#/definitions/xmlBinding" },
+        "lotReference": { "type": "object" }
+      },
+      "patternProperties": { "^\\$": {} },
+      "additionalProperties": false
+    }
+  }
+}

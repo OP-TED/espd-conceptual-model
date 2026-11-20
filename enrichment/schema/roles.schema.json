@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/roles.schema.json",
+  "title": "Role registry (implementer-neutral)",
+  "description": "registries/roles.json. Buyer types and economic-operator roles with their exclusion-ground dispositions and UBL role mapping. Display text and per-role UI behaviour are NOT part of this registry.",
+  "type": "object",
+  "required": ["parts", "exclusionCategories", "exclusionDispositions", "exclusionCategoryMap", "buyerTypes", "eoRoles"],
+  "properties": {
+    "parts": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "exclusionCategories": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "exclusionDispositions": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "exclusionCategoryMap": {
+      "type": "object",
+      "description": "Part III exclusion-ground code prefix -> exclusion category.",
+      "patternProperties": { "^\\$": {} },
+      "additionalProperties": { "type": "string" }
+    },
+    "buyerTypes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "allOf": [ { "$ref": "#/definitions/role" }, { "type": "object", "properties": { "documentType": { "const": "request" } } } ] }
+    },
+    "eoRoles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "allOf": [ { "$ref": "#/definitions/role" }, { "type": "object", "required": ["xmlMapping"], "properties": { "xmlMapping": true, "documentType": { "const": "response" } } } ] }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false,
+  "definitions": {
+    "role": {
+      "type": "object",
+      "required": ["id", "documentType", "exclusionGroundRules"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "documentType": { "enum": ["request", "response"] },
+        "exclusionGroundRules": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string" },
+          "description": "exclusion category -> disposition. Keys/values are checked against the registry vocabularies by validate.mjs."
+        },
+        "xmlMapping": {
+          "type": "object",
+          "required": ["element", "code"],
+          "properties": { "element": { "type": "string" }, "code": { "type": "string" } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/codelist-attributes.schema.json",
+  "title": "Codelist-attribute profile",
+  "description": "registries/codelist-attributes.json. The fixed attribute set the Schematron requires on code elements, defined once per codelist. TODO: duplicates the Schematron; generate one from the other.",
+  "type": "object",
+  "required": ["source", "codelists"],
+  "properties": {
+    "source": {
+      "type": "object",
+      "required": ["schematron", "version"],
+      "properties": { "schematron": { "type": "string" }, "version": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "codelists": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "patternProperties": { "^\\$": {} },
+        "additionalProperties": { "type": "string" }
+      }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}
