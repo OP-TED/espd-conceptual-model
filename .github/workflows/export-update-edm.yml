@@ -7,7 +7,7 @@ on:
       # pin a tag or SHA, and an exporter change can be run before it is
       # merged. The default stays main, as before.
       espd_tools_ref:
-        description: 'espd-tools ref to use as the exporter input (branch, tag or SHA). 5.0.0 exports need develop.'
+        description: 'espd-tools ref to use as the exporter and model compiler (branch, tag or SHA). 5.0.0 exports need develop; the model step needs a ref that contains model-compiler.'
         required: true
         default: 'main'
         type: string
@@ -69,6 +69,25 @@ jobs:
           ls -R1 outputs || true
           test -f outputs/espd-edm.json
 
+      # Compiles the published ESPD model (ESPD-EDM/model) from the export just
+      # produced plus the enrichment in this repository (enrichment/). It runs before
+      # ESPD-EDM is checked out on purpose: a model that does not compile, including
+      # enrichment that has drifted from the EA structure (the structural-equivalence
+      # gate), stops the run before anything is written to ESPD-EDM. The compiler
+      # reads the code lists exported above, so structure, code lists and model all
+      # come from the same run. Needs an espd-tools ref that contains model-compiler.
+      - name: Compile the ESPD model
+        working-directory: espd-tools/model-compiler
+        run: |
+          npm ci
+          node build.mjs \
+            --out ../../model-out \
+            --edm ../EAtoJSON/outputs/espd-edm.json \
+            --enrichment ../../conceptual-model/enrichment \
+            --codelists ../EAtoJSON/outputs/code-lists \
+            --source-ref "espd-conceptual-model@${{ github.sha }} espd-tools@${ESPD_TOOLS_REF}"
+          test -f ../../model-out/compiled-model.json
+
       - name: Checkout ESPD-EDM
         uses: actions/checkout@v4
         with:
@@ -104,9 +123,15 @@ jobs:
             fi
           fi
 
+          # The model folder is generated as a whole, so replace it rather than merge:
+          # a criterion removed from the model must not linger in ESPD-EDM.
+          rm -rf espd-edm/model
+          cp -r model-out espd-edm/model
+
           echo "Copied:"
           ls -1 espd-edm/criterion/espd-edm.json
           ls -1 espd-edm/codelists | head -n 20 || true
+          ls -1 espd-edm/model
 
         # make the codelists/gc folder mirror the export exactly (including deletions)
         # - name: Mirror codelists/gc exactly (dangerous - will delete extras)
@@ -120,8 +145,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if [[ $(git status --porcelain) ]]; then
-            git add criterion/espd-edm.json codelists/*.gc codelists/codelists.json
-            git commit -m "Automation: update espd-edm.json and codelists (.gc) from espd-tools export.js [branch: ${RUN_BRANCH}]"
+            git add criterion/espd-edm.json codelists/*.gc codelists/codelists.json model
+            git commit -m "Automation: update espd-edm.json, codelists (.gc) and the compiled model from espd-tools [branch: ${RUN_BRANCH}]"
             git push origin ${RUN_BRANCH}
           else
             echo "No changes to commit in ESPD-EDM"
