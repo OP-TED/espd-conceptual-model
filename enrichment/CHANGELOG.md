@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added `registries/codelist-governance.json` (with schema and validator rules): the implementer-neutral part of the
+  codelist governance previously kept in `espd-demo/model/codelists/governance.json`. `shipped` is derived from `gc`;
+  `useForUI` stays with the application. Published in `ESPD-EDM/model/registries`.
+
 - Realigned with the current EA model (the export changed after the initial import):
   - The seven Part II/V "other" criteria now have their own EA codes and tags
     (`OT65`/`OT` is now `C65_OT`/`sme`, and likewise `shelt-worksh`, `registered`, `eo-group`,

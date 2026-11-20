@@ -54,6 +54,7 @@ Those stay in the consuming application (for the demo: `espd-demo/model/model-so
 | `registries/codelist-attributes.json` | fixed attribute sets per codelist (mirrors the Schematron) |
 | `registries/scheme-agency-profile.json` | `@schemeAgencyID` derivation policy |
 | `registries/roles.json` | buyer types and EO roles, exclusion dispositions, UBL role mapping |
+| `registries/codelist-governance.json` | per codelist: its `.gc` file (present = shipped), aliases, whether the Schematron/CVA enforces it, whether the model inlines it as an enum, `excludedCodes`, `externalSource` |
 | `criteria/<code>.sidecar.json` | semantic ids and instance bindings for one criterion (a criterion is modelled when it has one) |
 | `criteria/<code>.hints.json` | optional constraints on the generated instance-data schema |
 | `schema/*.schema.json` | JSON Schema for each of the above |
@@ -110,6 +111,12 @@ version and the enrichment version it was built from.
 - **The instance-data shape becomes a published contract.** The `instanceBinding.path` values
   define the canonical instance JSON shape. Once the compiled model is published, that shape is
   shared by all implementers.
-- **Codelist governance.** `espd-demo/model/codelists/governance.json` mixes facts that belong
-  upstream (`excludedCodes`, `inlineEnum` for published schemas) with UI choices (`useForUI`) and
-  values that can be derived (`shipped`, `schematronValidated`). To be classified and split.
+- **Codelist governance: split done, two follow-ups.** The neutral facts are `registries/codelist-governance.json`
+  (`shipped` is derived from `gc`; `useForUI` stays in each application). TODO: derive `schematronValidated` from the CVA
+  instead of keeping it by hand (a test in espd-tools checks it today). TODO: the compiler marks every inlined enum
+  `$codelistEnumIsImplementerChoice`, but per the governance axes only an unvalidated one should carry it; decide whether the
+  compiler should read this registry to set it (that changes published schemas).
+- **TODO: ESPD-EDM's Checks workflow should verify the published model.** It runs on the commit the export workflow pushes
+  but is not on the 5.0.0 branches. Add `node verify.mjs --model model --edm criterion/espd-edm.json` (espd-tools/model-compiler)
+  there: it checks the envelope against its schema, that every listed file exists, that nothing stray or hand-edited lingers, and that
+  the model was built from the structure file in the same commit.

@@ -116,6 +116,10 @@ jobs:
       # gate), stops the run before anything is written to ESPD-EDM. The compiler
       # reads the code lists exported above, so structure, code lists and model all
       # come from the same run. Needs an espd-tools ref that contains model-compiler.
+      #
+      # TODO: checks on the published model belong to ESPD-EDM (see publish-validation.yml). Add
+      # `node verify.mjs --model model --edm criterion/espd-edm.json` (espd-tools/model-compiler)
+      # to ESPD-EDM's Checks workflow, which is not on the 5.0.0 branches yet.
       - name: Compile the ESPD model
         working-directory: espd-tools/model-compiler
         run: |

@@ -31,6 +31,7 @@ const REGISTRY_SCHEMAS = {
   'encoding-profile.json': 'encoding-profile',
   'scheme-agency-profile.json': 'scheme-agency-profile',
   'roles.json': 'roles',
+  'codelist-governance.json': 'codelist-governance',
 };
 
 const errors = [];
@@ -112,6 +113,25 @@ if (fs.existsSync(path.join(registriesDir, 'roles.json'))) {
   }
   for (const [prefix, c] of Object.entries(roles.exclusionCategoryMap ?? {})) {
     if (!prefix.startsWith('$') && !cats.has(c)) fail('registries/roles.json', `exclusionCategoryMap["${prefix}"] -> unknown category "${c}"`);
+  }
+}
+
+// --- codelist-governance cross-checks --------------------------------------
+// (Checks against the real code lists, the CVA and the compiler's behaviour need those inputs and
+// live in espd-tools/model-compiler/codelist-governance.test.mjs.)
+if (fs.existsSync(path.join(registriesDir, 'codelist-governance.json'))) {
+  const where = 'registries/codelist-governance.json';
+  const { codelists } = read('registries', 'codelist-governance.json');
+  const names = new Map(); // lower-case name or alias -> owner
+  for (const [name, e] of Object.entries(codelists)) {
+    if (e.gc && e.externalSource) fail(where, `${name}: has both a gc file and an externalSource (a shipped list needs no external source)`);
+    if (!e.gc && !e.externalSource) fail(where, `${name}: not shipped (no gc), so it must record where it comes from (externalSource)`);
+    if (!e.gc && e.excludedCodes) fail(where, `${name}: excludedCodes needs a shipped list (gc)`);
+    for (const n of [name, ...(e.aliases ?? [])]) {
+      const k = n.toLowerCase();
+      if (names.has(k) && names.get(k) !== name) fail(where, `"${n}" names both ${names.get(k)} and ${name}`);
+      names.set(k, name);
+    }
   }
 }
 
