@@ -45,6 +45,10 @@
       "id": "slc-suit-auth-mbrshp.registration-number",
       "instanceBinding": { "side": "response", "path": ["registrationNumber"] }
     },
+    "C66_slc-suit-auth-mbrshp/RG1/RSG1/QSG2/QSG2/Q1": {
+      "id": "slc-suit-auth-mbrshp.not-registered-reasons",
+      "instanceBinding": { "side": "response", "path": ["notRegisteredReasons"] }
+    },
 
     "C66_slc-suit-auth-mbrshp/RG1/RSG1/QSG3/Q1": {
       "id": "slc-suit-auth-mbrshp.evidence-available-electronically",

@@ -71,15 +71,14 @@ for (const file of files) {
   if (kind === 'sidecar') {
     sidecarCodes.add(code);
     if (!check(where, validateSidecar, data)) continue;
-    // The file stem is the criterion's output identity: its EA code for a normal
-    // criterion, or 'ot-<id>' for the generic Part II/V 'OT' criteria, which share
-    // the EA code 'OT' and are disambiguated by tag + id.
+    // The file stem is the criterion's output identity (the key of every published
+    // file). It is the EA code, except for the Part II/V 'other' criteria, which are
+    // keyed 'ot-<id>' so that their identity stays stable although EA now gives them
+    // their own codes (these criteria must also carry their EA tag, e.g. C65_OT).
     const c = data.criterion;
-    if (c.code === 'OT') {
-      if (!c.tag) fail(where, `an 'OT' criterion must carry criterion.tag (e.g. OT65) to be unambiguous`);
-      if (code !== `ot-${c.id}`) fail(where, `file name "${code}" must be "ot-${c.id}" (OT criterion with id "${c.id}")`);
-    } else if (code !== c.code) {
-      fail(where, `criterion.code "${c.code}" does not match the file name "${code}"`);
+    if (code !== c.code) {
+      if (code !== `ot-${c.id}`) fail(where, `file name "${code}" must be the criterion code "${c.code}" or "ot-${c.id}"`);
+      else if (!c.tag) fail(where, `an "ot-<id>" criterion must carry criterion.tag (its EA tag, e.g. C65_OT)`);
     }
     for (const [requestpath, c] of Object.entries(data.components)) {
       const prev = idOwner.get(c.id);

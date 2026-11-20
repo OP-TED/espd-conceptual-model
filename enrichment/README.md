@@ -59,8 +59,11 @@ Those stay in the consuming application (for the demo: `espd-demo/model/model-so
 | `schema/*.schema.json` | JSON Schema for each of the above |
 | `validate.mjs` | schema validation plus cross-file checks |
 
-Criterion files are named after the criterion's EA code, except the generic Part II/V `OT`
-criteria, which are named `ot-<id>` and carry their EA `tag` (for example `OT65`).
+Criterion files are named after the criterion's EA code, except the Part II/V "other" criteria,
+which are named `ot-<id>` (for example `ot-eo-size`) and must carry their EA `tag` (for example
+`C65_OT`). The file name is the criterion's output identity, the key of every published file.
+EA now gives these criteria their own codes (for example `sme`); the `ot-<id>` names are kept so
+that the published identities stay stable when EA renames a code.
 
 ## Validating
 
@@ -77,9 +80,15 @@ consistent with its declared categories and dispositions.
 ## Status of this folder
 
 This is the canonical home going forward. During the transition the demo still reads its own
-copies under `espd-demo/model/model-sources/` (its compiler has not moved yet), so changes to the
-files listed above must currently be made in **both** places. The demo's copies are removed when
-the compiler moves to `espd-tools` and the demo consumes the published model.
+copies under `espd-demo/model/model-sources/` (its compiler has not moved yet). The demo's copies
+are removed when it consumes the published model.
+
+The two have **diverged on purpose**: this folder follows the current EA model, while the demo's
+copies (and its local `espd-tools/EAtoJSON/outputs/espd-edm.json`) still correspond to the earlier
+export. They differ for exactly nine criteria (the seven `ot-*` criteria, `exg-mis-misconduct`,
+`slc-suit-auth-mbrshp`; see the CHANGELOG). Everything else is identical. The demo catches up at the
+cutover, when it starts consuming the published model; its i18n keys, which are derived from the EA
+paths, change for those criteria then.
 
 The `source` paths inside `registries/value-types.json` and `registries/codelist-attributes.json`
 are relative to this folder and assume the sibling-checkout layout (`ESPD-EDM`,
