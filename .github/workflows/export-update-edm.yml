@@ -11,6 +11,22 @@ on:
         required: true
         default: 'main'
         type: string
+      edm_branch:
+        description: 'ESPD-EDM branch to publish to. Leave empty to use the branch this workflow runs from (created in ESPD-EDM if it does not exist). When given, the branch must already exist. Nothing is pushed to main.'
+        required: false
+        default: ''
+        type: string
+
+# The GitHub App token does all the cross-repository work; the built-in token
+# only needs to read this repository.
+permissions:
+  contents: read
+
+# One publication per ESPD-EDM branch at a time, so two dispatches cannot race on
+# the push. Queued rather than cancelled: each run publishes a specific export.
+concurrency:
+  group: export-update-edm-${{ inputs.edm_branch || github.ref_name }}
+  cancel-in-progress: false
 
 env:
   RUN_BRANCH: ${{ github.ref_name }}
@@ -20,10 +36,34 @@ jobs:
   export-and-publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Show chosen branch
+      # Decides the target before any work is done. The ESPD-EDM branch is the
+      # branch this workflow runs from unless edm_branch says otherwise. The guard
+      # against main is on the branch being WRITTEN, not on the one this workflow
+      # runs from: the two differ whenever edm_branch is given, so a check on
+      # github.ref would let a run from a feature branch with edm_branch=main push
+      # to ESPD-EDM main. A main target still runs the export and the compile (a
+      # dry run) but never pushes.
+      - name: Resolve the ESPD-EDM target branch
+        env:
+          INPUT_EDM_BRANCH: ${{ inputs.edm_branch }}
         run: |
+          target="${INPUT_EDM_BRANCH:-${RUN_BRANCH}}"
+          target="${target#refs/heads/}"
           echo "RUN_BRANCH=${RUN_BRANCH}"
           echo "ESPD_TOOLS_REF=${ESPD_TOOLS_REF}"
+          echo "EDM_BRANCH=${target}"
+
+          if ! git check-ref-format --branch "${target}" >/dev/null 2>&1; then
+            echo "::error::\"${target}\" is not a valid branch name."
+            exit 1
+          fi
+          if [[ "${target}" == "main" ]]; then
+            echo "::warning::The target is ESPD-EDM main: this is a dry run, nothing will be pushed."
+          fi
+          echo "EDM_BRANCH=${target}" >> "${GITHUB_ENV}"
+          if [[ -n "${INPUT_EDM_BRANCH}" ]]; then
+            echo "EDM_BRANCH_EXPLICIT=true" >> "${GITHUB_ENV}"
+          fi
 
       # Mints a short-lived installation token for the two repositories this
       # workflow touches: espd-tools (read, the exporter source) and ESPD-EDM
@@ -95,14 +135,24 @@ jobs:
           path: espd-edm
           token: ${{ steps.app-token.outputs.token }}
 
+      # With edm_branch given the branch has to exist already: creating it here
+      # would base it on ESPD-EDM's default branch, which carries a different
+      # release's layout, and the export would land on the wrong content. Without
+      # edm_branch the branch named like the run branch is created when missing, as
+      # before.
       - name: Switch/Create branch in ESPD-EDM
         working-directory: espd-edm
         run: |
           git fetch origin
-          if git rev-parse --verify origin/${RUN_BRANCH} >/dev/null 2>&1; then
-            git checkout ${RUN_BRANCH}
+          if git rev-parse --verify --quiet "refs/remotes/origin/${EDM_BRANCH}" >/dev/null; then
+            # -B with an explicit start point, so a branch name that matches a
+            # path cannot be read as one.
+            git checkout -B "${EDM_BRANCH}" "origin/${EDM_BRANCH}"
+          elif [[ "${EDM_BRANCH_EXPLICIT:-}" == "true" ]]; then
+            echo "::error::ESPD-EDM has no branch \"${EDM_BRANCH}\". Create it from the right release branch first."
+            exit 1
           else
-            git checkout -b ${RUN_BRANCH}
+            git checkout -b "${EDM_BRANCH}"
           fi
 
       - name: Copy results into final folders
@@ -138,16 +188,16 @@ jobs:
         #   run: |
         #     rsync -a --delete espd-tools/EAtoJSON/outputs/code-lists/ espd-edm/codelists/gc/
 
-      - name: Commit and push to ESPD-EDM@${{ env.RUN_BRANCH }}
-        if: github.ref != 'refs/heads/main' # only push changes if not on main branch
+      - name: Commit and push to ESPD-EDM@${{ env.EDM_BRANCH }}
+        if: env.EDM_BRANCH != 'main' # never push to ESPD-EDM main (the check is on the target, not the run branch)
         working-directory: espd-edm
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if [[ $(git status --porcelain) ]]; then
             git add criterion/espd-edm.json codelists/*.gc codelists/codelists.json model
-            git commit -m "Automation: update espd-edm.json, codelists (.gc) and the compiled model from espd-tools [branch: ${RUN_BRANCH}]"
-            git push origin ${RUN_BRANCH}
+            git commit -m "Automation: update espd-edm.json, codelists (.gc) and the compiled model from espd-tools [branch: ${EDM_BRANCH}]"
+            git push origin "${EDM_BRANCH}"
           else
             echo "No changes to commit in ESPD-EDM"
           fi
