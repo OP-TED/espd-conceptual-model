@@ -14,7 +14,7 @@ EA model (ESPD_CM.eapx)  --export-->  espd-edm.json  --+
 enrichment/ (this folder)  ----------------------------+
 ```
 
-The model compiler (currently in `espd-demo/model/compiler`, moving to `espd-tools`) joins the
+The model compiler (`espd-tools/model-compiler`) joins the
 two inputs and gates on structural equivalence, so enrichment that drifts from a changed EA
 structure fails the build instead of silently diverging.
 
@@ -79,16 +79,11 @@ consistent with its declared categories and dispositions.
 
 ## Status of this folder
 
-This is the canonical home going forward. During the transition the demo still reads its own
-copies under `espd-demo/model/model-sources/` (its compiler has not moved yet). The demo's copies
-are removed when it consumes the published model.
-
-The two have **diverged on purpose**: this folder follows the current EA model, while the demo's
-copies (and its local `espd-tools/EAtoJSON/outputs/espd-edm.json`) still correspond to the earlier
-export. They differ for exactly nine criteria (the seven `ot-*` criteria, `exg-mis-misconduct`,
-`slc-suit-auth-mbrshp`; see the CHANGELOG). Everything else is identical. The demo catches up at the
-cutover, when it starts consuming the published model; its i18n keys, which are derived from the EA
-paths, change for those criteria then.
+This is the only home of these sources. `espd-demo` used to keep its own copies; it now consumes the
+published model (`ESPD-EDM/model`, compiled from this folder by `espd-tools/model-compiler`) and holds
+only its own presentation inputs. When the model changes here, the demo picks it up by re-syncing
+(`npm run model:sync`); its English i18n catalogues, whose keys derive from the EA codes and paths,
+may need matching entries (a test in the demo lists any that are missing).
 
 The `source` paths inside `registries/value-types.json` and `registries/codelist-attributes.json`
 are relative to this folder and assume the sibling-checkout layout (`ESPD-EDM`,
