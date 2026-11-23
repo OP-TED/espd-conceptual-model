@@ -6,7 +6,9 @@
   instance-data schema, example, UBL mapping and form, plus a manifest per part. Added `registries/ui-hints.json`
   (from `espd-demo/model/model-sources/registries`), the form vocabulary (`uiType`) and schemas for all of them
   (`ui-hints`, `parts-manifest`, `parts-form`, `parts-mapping`). `validate.mjs` checks them and their cross-references.
-  Not yet published or consumed; the demo still runs on its own copy. The goal is to derive them from the EA model.
+  Published by the model compiler to `ESPD-EDM/model/parts` and `model/registries/ui-hints.json`; `espd-demo` vendors them
+  and has dropped its own copy (it keeps only the tests). The design notes of each part moved here as `README.md`.
+  The goal is to derive them from the EA model.
 
 - Added `registries/codelist-governance.json` (with schema and validator rules): the implementer-neutral part of the
   codelist governance previously kept in `espd-demo/model/codelists/governance.json`. `shipped` is derived from `gc`;

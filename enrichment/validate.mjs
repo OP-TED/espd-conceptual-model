@@ -187,7 +187,7 @@ if (fs.existsSync(partsDir)) {
     if (!check(`${where}/index.json`, validateManifest, manifest)) continue;
     if (dir !== `part${manifest.part}`) fail(`${where}/index.json`, `part "${manifest.part}" does not match the folder name`);
 
-    const expected = new Set(['index.json']);
+    const expected = new Set(['index.json', 'README.md']); // README.md: design notes, not published
     for (const id of manifest.sections) for (const kind of SECTION_KINDS) expected.add(`section${id}.${kind}.json`);
     for (const f of fs.readdirSync(path.join(partsDir, dir))) {
       if (!expected.has(f)) fail(`${where}/${f}`, 'unexpected file (not index.json and not a section file of a section listed in the manifest)');

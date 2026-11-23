@@ -62,6 +62,7 @@ Those stay in the consuming application (for the demo: `espd-demo/model/model-so
 | `registries/codelist-governance.json` | per codelist: its `.gc` file (present = shipped), aliases, whether the Schematron/CVA enforces it, whether the model inlines it as an enum, `excludedCodes`, `externalSource` |
 | `registries/ui-hints.json` | the closed vocabulary of form affordances (for example the TED notice lookup) a part form field may use in `uiHints` |
 | `parts/<part>/index.json` | manifest of an administrative part (I, II, VI): header keys and the order of its sections |
+| `parts/README.md`, `parts/<part>/README.md` | conventions and design notes of the parts (not published) |
 | `parts/<part>/section<L>.schema.json` | instance-data schema of the section |
 | `parts/<part>/section<L>.example.json` | an example instance; validated against the schema |
 | `parts/<part>/section<L>.mapping.json` | instance data to UBL mapping of the section |
@@ -94,9 +95,10 @@ schema; every form code list is known to `codelist-governance.json`; and every `
 `ui-hints.json` with an allowed input kind. Round-trip, Schematron and enum-sync tests need the mapping
 engine and the code lists, so they stay with the consumers.
 
-The parts are copied here from `espd-demo/model/parts` and are not published or consumed from here yet
-(next steps: the model compiler publishes them to `ESPD-EDM/model/parts`; the demo vendors them and
-drops its copy). Until then the demo's copy is the one it runs on, so change both or neither.
+The model compiler publishes the parts verbatim to `ESPD-EDM/model/parts` (and `ui-hints.json` to
+`model/registries`), after checking that each part is complete, each section identifies itself and each
+example validates against its schema. They are also covered by the enrichment hash in the envelope. The demo vendors the published
+parts (`npm run model:sync`) and no longer keeps its own copy: change them here only.
 
 ## Status of this folder
 
