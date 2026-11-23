@@ -36,14 +36,19 @@ Belongs here: facts that are true of the ESPD **regardless of who implements it*
 - role facts: role ids, document type, exclusion-ground dispositions, UBL role mapping
 - constraints on the instance-data schema that the EA model cannot express
 
+- the administrative parts (I, II, VI): per section the instance-data schema, an example, the UBL
+  mapping and the form (the fields, their input types, labels and code lists). They are not criteria,
+  so the compiler cannot derive them from the EA structure. They are hand-authored for now, with the
+  goal of deriving them from the EA model (see `parts/` below)
+- the vocabulary of form affordances (`registries/ui-hints.json`, `uiType` in `schema/parts-form.schema.json`)
+
 Does **not** belong here: choices of one particular application.
 
-- form layout, `uiType`, i18n keys and label text, group names, wizard order
+- form layout of the criteria, group names, wizard order, i18n keys and label text for criteria
 - which Parts a given UI shows or lets a user edit per role
-- UI affordances such as the TED notice lookup
 
 Those stay in the consuming application (for the demo: `espd-demo/model/model-sources`
-`form-profile.json`, `ui-hints.json`, `role-ui.json` and `*.presentation.json`).
+`form-profile.json`, `role-ui.json` and `*.presentation.json`).
 
 ## Layout
 
@@ -55,6 +60,12 @@ Those stay in the consuming application (for the demo: `espd-demo/model/model-so
 | `registries/scheme-agency-profile.json` | `@schemeAgencyID` derivation policy |
 | `registries/roles.json` | buyer types and EO roles, exclusion dispositions, UBL role mapping |
 | `registries/codelist-governance.json` | per codelist: its `.gc` file (present = shipped), aliases, whether the Schematron/CVA enforces it, whether the model inlines it as an enum, `excludedCodes`, `externalSource` |
+| `registries/ui-hints.json` | the closed vocabulary of form affordances (for example the TED notice lookup) a part form field may use in `uiHints` |
+| `parts/<part>/index.json` | manifest of an administrative part (I, II, VI): header keys and the order of its sections |
+| `parts/<part>/section<L>.schema.json` | instance-data schema of the section |
+| `parts/<part>/section<L>.example.json` | an example instance; validated against the schema |
+| `parts/<part>/section<L>.mapping.json` | instance data to UBL mapping of the section |
+| `parts/<part>/section<L>.form.json` | the form: fields, input types, labels (i18n key plus English text), code lists |
 | `criteria/<code>.sidecar.json` | semantic ids and instance bindings for one criterion (a criterion is modelled when it has one) |
 | `criteria/<code>.hints.json` | optional constraints on the generated instance-data schema |
 | `schema/*.schema.json` | JSON Schema for each of the above |
@@ -76,7 +87,16 @@ npm run validate
 
 Besides the schemas, it checks: no unexpected files, file name matches the criterion, every
 hints file has a sidecar, semantic ids are unique across all sidecars, and `roles.json` is
-consistent with its declared categories and dispositions.
+consistent with its declared categories and dispositions. For the parts it checks: the manifest and
+every section file validate; the files on disk are exactly those the manifest lists; each example
+validates against its section schema; every form `dataPath` and mapping `from` is a property of that
+schema; every form code list is known to `codelist-governance.json`; and every `uiHints.lookup` is in
+`ui-hints.json` with an allowed input kind. Round-trip, Schematron and enum-sync tests need the mapping
+engine and the code lists, so they stay with the consumers.
+
+The parts are copied here from `espd-demo/model/parts` and are not published or consumed from here yet
+(next steps: the model compiler publishes them to `ESPD-EDM/model/parts`; the demo vendors them and
+drops its copy). Until then the demo's copy is the one it runs on, so change both or neither.
 
 ## Status of this folder
 
