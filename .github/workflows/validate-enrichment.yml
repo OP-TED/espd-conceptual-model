@@ -11,7 +11,13 @@ on:
     paths:
       - 'enrichment/**'
       - '.github/workflows/validate-enrichment.yml'
+  # Pushes only to the long-lived branches: a pull request already runs the check on every commit of its
+  # branch, so a push trigger on feature branches would run it twice.
   push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
     paths:
       - 'enrichment/**'
       - '.github/workflows/validate-enrichment.yml'
@@ -39,3 +45,4 @@ jobs:
         run: |
           npm ci
           npm run validate
+          npm test

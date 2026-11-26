@@ -12,7 +12,7 @@ on:
         default: 'main'
         type: string
       edm_branch:
-        description: 'ESPD-EDM branch to publish to. Leave empty to use the branch this workflow runs from (created in ESPD-EDM if it does not exist). When given, the branch must already exist. Nothing is pushed to main.'
+        description: 'ESPD-EDM branch to publish to, as a plain branch name (for example release/5.0.0, not refs/heads/...). Leave empty to use the branch this workflow runs from (created in ESPD-EDM if it does not exist). When given, the branch must already exist. Nothing is pushed to main.'
         required: false
         default: ''
         type: string
@@ -47,8 +47,13 @@ jobs:
         env:
           INPUT_EDM_BRANCH: ${{ inputs.edm_branch }}
         run: |
+          # A plain branch name only: the concurrency group above is built from the raw input, so two spellings
+          # of one branch ("x" and "refs/heads/x") would get different groups and could race on the push.
+          if [[ "${INPUT_EDM_BRANCH}" == refs/* ]]; then
+            echo "::error::edm_branch takes a plain branch name (for example release/5.0.0), not \"${INPUT_EDM_BRANCH}\"."
+            exit 1
+          fi
           target="${INPUT_EDM_BRANCH:-${RUN_BRANCH}}"
-          target="${target#refs/heads/}"
           echo "RUN_BRANCH=${RUN_BRANCH}"
           echo "ESPD_TOOLS_REF=${ESPD_TOOLS_REF}"
           echo "EDM_BRANCH=${target}"
@@ -123,13 +128,15 @@ jobs:
       - name: Compile the ESPD model
         working-directory: espd-tools/model-compiler
         run: |
+          # The ref can be a moving branch name, so record the commit it resolved to as well.
+          tools_sha="$(git rev-parse --short HEAD)"
           npm ci
           node build.mjs \
             --out ../../model-out \
             --edm ../EAtoJSON/outputs/espd-edm.json \
             --enrichment ../../conceptual-model/enrichment \
             --codelists ../EAtoJSON/outputs/code-lists \
-            --source-ref "espd-conceptual-model@${{ github.sha }} espd-tools@${ESPD_TOOLS_REF}"
+            --source-ref "espd-conceptual-model@${{ github.sha }} espd-tools@${tools_sha} (ref ${ESPD_TOOLS_REF})"
           test -f ../../model-out/compiled-model.json
 
       - name: Checkout ESPD-EDM

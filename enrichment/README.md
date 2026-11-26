@@ -86,13 +86,18 @@ npm ci
 npm run validate
 ```
 
-Besides the schemas, it checks: no unexpected files, file name matches the criterion, every
+Besides the schemas, it checks: no unexpected files, no key repeated within one JSON object
+(`JSON.parse` would silently keep the last one), file name matches the criterion, every
 hints file has a sidecar, semantic ids are unique across all sidecars, and `roles.json` is
 consistent with its declared categories and dispositions. For the parts it checks: the manifest and
 every section file validate; the files on disk are exactly those the manifest lists; each example
 validates against its section schema; every form `dataPath` and mapping `from` is a property of that
 schema; every form code list is known to `codelist-governance.json`; and every `uiHints.lookup` is in
-`ui-hints.json` with an allowed input kind. Round-trip, Schematron and enum-sync tests need the mapping
+`ui-hints.json` with an allowed input kind. A path counts as a property of a section schema when it
+is declared directly, through `$ref` or array items, or in any branch of `allOf`, `anyOf`, `oneOf`,
+`if`, `then` or `else`.
+
+`npm test` runs the tests of these checks (`checks.test.mjs`). Round-trip, Schematron and enum-sync tests need the mapping
 engine and the code lists, so they stay with the consumers.
 
 The model compiler publishes the parts verbatim to `ESPD-EDM/model/parts` (and `ui-hints.json` to

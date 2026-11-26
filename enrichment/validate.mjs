@@ -10,6 +10,7 @@
 //   - each sidecar's criterion.code equals its file name stem; every hints file
 //     has a matching sidecar
 //   - component semantic ids are unique across ALL sidecars
+//   - no key appears twice in the same JSON object (JSON.parse would silently keep the last one)
 //   - roles.json: role ids unique; exclusionGroundRules cover exactly the declared
 //     categories with declared dispositions; exclusionCategoryMap values are
 //     declared categories
@@ -18,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
+import { findDuplicateKeys, schemaHasPath } from './checks.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const read = (...p) => JSON.parse(fs.readFileSync(path.join(root, ...p), 'utf8'));
@@ -42,6 +44,31 @@ function check(where, validate, data) {
   if (validate(data)) return true;
   for (const e of validate.errors) fail(where, `${e.instancePath || '/'} ${e.message}${e.params?.additionalProperty ? ` ("${e.params.additionalProperty}")` : ''}`);
   return false;
+}
+
+// --- duplicate keys ---------------------------------------------------------
+// JSON.parse keeps the last of two identical keys, so a copy-paste duplicate (for example two
+// components with the same request path) would pass every other check. Scan the raw text.
+function jsonFiles(dir) {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...jsonFiles(full));
+    else if (entry.name.endsWith('.json')) out.push(full);
+  }
+  return out;
+}
+for (const sub of ['registries', 'criteria', 'parts', 'schema']) {
+  const dir = path.join(root, sub);
+  if (!fs.existsSync(dir)) continue;
+  for (const file of jsonFiles(dir)) {
+    const where = path.relative(root, file).split(path.sep).join('/');
+    try {
+      for (const message of findDuplicateKeys(fs.readFileSync(file, 'utf8'))) fail(where, message);
+    } catch (err) {
+      fail(where, `not valid JSON (${err.message})`);
+    }
+  }
 }
 
 // --- registries -----------------------------------------------------------
@@ -80,10 +107,10 @@ for (const file of files) {
     // file). It is the EA code, except for the Part II/V 'other' criteria, which are
     // keyed 'ot-<id>' so that their identity stays stable although EA now gives them
     // their own codes (these criteria must also carry their EA tag, e.g. C65_OT).
-    const c = data.criterion;
-    if (code !== c.code) {
-      if (code !== `ot-${c.id}`) fail(where, `file name "${code}" must be the criterion code "${c.code}" or "ot-${c.id}"`);
-      else if (!c.tag) fail(where, `an "ot-<id>" criterion must carry criterion.tag (its EA tag, e.g. C65_OT)`);
+    const crit = data.criterion;
+    if (code !== crit.code) {
+      if (code !== `ot-${crit.id}`) fail(where, `file name "${code}" must be the criterion code "${crit.code}" or "ot-${crit.id}"`);
+      else if (!crit.tag) fail(where, `an "ot-<id>" criterion must carry criterion.tag (its EA tag, e.g. C65_OT)`);
     }
     for (const [requestpath, c] of Object.entries(data.components)) {
       const prev = idOwner.get(c.id);
@@ -153,26 +180,6 @@ const validateMapping = schemaOf('parts-mapping');
 const looseAjv = new Ajv({ allErrors: true, strict: false });
 const SECTION_KINDS = ['schema', 'example', 'mapping', 'form'];
 let partSections = 0;
-
-/** Does `dataPath` (partI.a.b) lead to a property of the section instance schema? */
-function schemaHasPath(schema, dataPath) {
-  const deref = (s) => {
-    let cur = s;
-    for (let i = 0; cur?.$ref && i < 20; i++) {
-      const m = cur.$ref.match(/^#\/(\$defs|definitions)\/(.+)$/);
-      cur = m ? schema[m[1]]?.[m[2]] : undefined;
-    }
-    return cur;
-  };
-  let node = schema;
-  for (const key of dataPath.replace(/\[\]/g, '').split('.')) {
-    node = deref(node);
-    if (node?.type === 'array' && node.items) node = deref(node.items);
-    node = node?.properties?.[key];
-    if (!node) return false;
-  }
-  return true;
-}
 
 if (fs.existsSync(partsDir)) {
   const hintsRegistry = fs.existsSync(path.join(registriesDir, 'ui-hints.json')) ? read('registries', 'ui-hints.json') : { lookups: {} };
