@@ -1,5 +1,5 @@
 {
-  "$comment": "Part II Section D criterion C61_OT (EA code 'subco-ent') — 'Subcontracted entities'. Response-only: INDICATOR answer gating (ONTRUE) a REPEATABLE group (QSG1, 0..n) of subcontractors, each with a name (DESCRIPTION) and id (ECONOMIC_OPERATOR_IDENTIFIER), plus the evidence block. Same shape as OT60. Shares EA code 'OT'; tag OT61 / id subcontractors.",
+  "$comment": "Part II Section D criterion C61_OT (EA code 'subco-ent') — 'Subcontracted entities'. Response-only: INDICATOR answer gating (ONTRUE) a REPEATABLE group (QSG1, 0..n) of subcontractors, each with a name (DESCRIPTION) and id (ECONOMIC_OPERATOR_IDENTIFIER), plus the evidence block. Same shape as C60_OT. EA tag C61_OT / id subcontractors.",
   "criterion": {
     "code": "subco-ent",
     "tag": "C61_OT",

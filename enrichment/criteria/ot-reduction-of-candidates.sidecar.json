@@ -1,5 +1,5 @@
 {
-  "$comment": "Part V criterion C63_OT (EA code 'staff-red') — 'Reduction of the number of qualified candidates'. The sole Part V criterion. Response-only, INDICATOR answer + conditional DESCRIPTION + the standard electronic-evidence block. The seven Part II/V criteria all share EA code 'OT'; `criterion.tag` disambiguates which one (OT63 here), and `criterion.id` is a distinct semantic id used as the instance key (key.source: 'id', not 'code').",
+  "$comment": "Part V criterion C63_OT (EA code 'staff-red') — 'Reduction of the number of qualified candidates'. The sole Part V criterion. Response-only, INDICATOR answer + conditional DESCRIPTION + the standard electronic-evidence block. The seven Part II/V criteria are keyed ot-<id>; `criterion.tag` is the EA tag (C63_OT here), and `criterion.id` is a distinct semantic id used as the instance key (key.source: 'id', not 'code').",
 
   "criterion": {
     "code": "staff-red",

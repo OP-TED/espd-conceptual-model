@@ -1,5 +1,5 @@
 {
-  "$comment": "Part II Section A criterion C57_OT (EA code 'shelt-worksh') — 'Economic operator is a sheltered workshop'. Response-only: INDICATOR answer gating (ONTRUE) a disabled-worker PERCENTAGE + a DESCRIPTION, plus the evidence block. Shares EA code 'OT'; tag OT57 / id sheltered-workshop.",
+  "$comment": "Part II Section A criterion C57_OT (EA code 'shelt-worksh') — 'Economic operator is a sheltered workshop'. Response-only: INDICATOR answer gating (ONTRUE) a disabled-worker PERCENTAGE + a DESCRIPTION, plus the evidence block. EA tag C57_OT / id sheltered-workshop.",
   "criterion": {
     "code": "shelt-worksh",
     "tag": "C57_OT",

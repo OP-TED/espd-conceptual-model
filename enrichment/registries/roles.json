@@ -21,7 +21,7 @@
     "optional"
   ],
   "exclusionCategoryMap": {
-    "$comment": "Maps a Part III exclusion-ground section-code PREFIX to its exclusion category. Longest-match-independent: prefixes are mutually exclusive. 'exg-sitn' (conflicts of interest / distortion situations) rolls up to 'misconduct', matching the legacy EXCLUSION_CATEGORY_MAP in js/model.js.",
+    "$comment": "Maps a Part III exclusion-ground section-code PREFIX to its exclusion category. Longest-match-independent: prefixes are mutually exclusive. 'exg-sitn' (conflicts of interest / distortion situations) rolls up to 'misconduct'.",
     "exg-crim": "criminal",
     "exg-pmt": "payment",
     "exg-mis": "misconduct",

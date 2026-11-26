@@ -1,7 +1,7 @@
 # Part I — Information concerning the procurement procedure and the contracting authority
 
 **Status: complete** (all three sections modelled, mapped, form-lensed, and
-tested; 42 tests). Every Schematron-mandated field is covered. Remaining items
+tested). Every Schematron-mandated field is covered. Remaining items
 are deliberate, documented deferrals — see "Deferred" below.
 
 Part I is administrative, not a criterion. In `espd-edm.json` it appears as three
@@ -30,7 +30,7 @@ Part I is administrative, not a criterion. In `espd-edm.json` it appears as thre
 
 ## Codelists used
 
-Per `docs/codelist-governance.md`:
+Per `registries/codelist-governance.json`:
 
 | Field | Codelist | Shipped | Validated | Schema |
 |---|---|---|---|---|
@@ -41,22 +41,22 @@ Per `docs/codelist-governance.md`:
 
 ## Deferred (optional — not debt)
 
-All grounded in the `espd-notes` repo (`notes/improvement-ideas.md`); none required for a conformant ESPD:
+None of these is required for a conformant ESPD:
 
-- **A2** — multiple publication references (EA cardinality is `1..n`; we model one).
-- **A** `Attachment/Name` — a human-readable notice title; present in EA, not modelled.
-- **B2** — optional buyer fields the EA model carries but no Schematron rule
+- **Section A:** multiple publication references (EA cardinality is `1..n`; we model one).
+- **Section A:** `Attachment/Name`, a human-readable notice title; present in EA, not modelled.
+- **Section B:** optional buyer fields the EA model carries but no Schematron rule
   requires: postal address (street/city/zone/building), contact
   (name/phone/email/fax), `WebsiteURI`, `EndpointID` (needs its own
   `@schemeID`/`@schemeAgencyID`), `BuyerProfileURI`.
-- **B1** — identifier lookup from a business register (VIES/GLEIF/national).
-- **A1** — TED notice lookup to prefill Part I.
-- **C1 / C2** — CPV classification and procurement type (works/supplies/services);
+- **Section B:** identifier lookup from a business register (VIES/GLEIF/national).
+- **Section A:** TED notice lookup to prefill Part I.
+- **Section C:** CPV classification and procurement type (works/supplies/services);
   neither is in the EA Part I model today.
 
 ## Known upstream flags (not Part I-specific)
 
 - `procurement-procedure-type` is not shipped as a `.gc` → its enum can't be
-  derived; carried by name until shipped (improvement-ideas X1).
+  derived; carried by name until shipped.
 - The `ESPD-Request-BASE.xml` sample still carries 3.x-era `ProcedureCode`
-  placeholders (improvement-ideas X2).
+  placeholders.

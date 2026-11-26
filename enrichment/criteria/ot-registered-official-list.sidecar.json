@@ -1,5 +1,5 @@
 {
-  "$comment": "Part II Section A criterion C58_OT (EA code 'registered') — 'Economic operator registered in a pre-qualification system / official list'. Response-only, the deepest OT tree: INDICATOR answer -> (ONTRUE) a 'registered?' INDICATOR -> (ONTRUE) list name/url/references + a 'covers all criteria?' indicator; a parallel (ONFALSE) 'will be able to provide?' indicator; and a (ONFALSE at the QSG1-answer level) caption branch (CA1 is a CAPTION = structural, no value binding). Plus the evidence block. Shares EA code 'OT'; tag OT58 / id registered-official-list.",
+  "$comment": "Part II Section A criterion C58_OT (EA code 'registered') — 'Economic operator registered in a pre-qualification system / official list'. Response-only, the deepest OT tree: INDICATOR answer -> (ONTRUE) a 'registered?' INDICATOR -> (ONTRUE) list name/url/references + a 'covers all criteria?' indicator; a parallel (ONFALSE) 'will be able to provide?' indicator; and a (ONFALSE at the QSG1-answer level) caption branch (CA1 is a CAPTION = structural, no value binding). Plus the evidence block. EA tag C58_OT / id registered-official-list.",
   "criterion": {
     "code": "registered",
     "tag": "C58_OT",

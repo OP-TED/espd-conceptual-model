@@ -1,5 +1,5 @@
 {
-  "$comment": "Part II Section C criterion C60_OT (EA code 'relied') — 'Relied on entities' (relying on other entities' capacities). Response-only: INDICATOR answer gating (ONTRUE) a REPEATABLE group (QSG1, 0..n) of entities, each with a name (DESCRIPTION) and id (ECONOMIC_OPERATOR_IDENTIFIER), plus the evidence block. The repeatable group carries its own binding (repeatable:true -> array container 'entities'), like C01 convictions. Shares EA code 'OT'; tag OT60 / id relied-on-entities.",
+  "$comment": "Part II Section C criterion C60_OT (EA code 'relied') — 'Relied on entities' (relying on other entities' capacities). Response-only: INDICATOR answer gating (ONTRUE) a REPEATABLE group (QSG1, 0..n) of entities, each with a name (DESCRIPTION) and id (ECONOMIC_OPERATOR_IDENTIFIER), plus the evidence block. The repeatable group carries its own binding (repeatable:true -> array container 'entities'), like C01 convictions. EA tag C60_OT / id relied-on-entities.",
   "criterion": {
     "code": "relied",
     "tag": "C60_OT",

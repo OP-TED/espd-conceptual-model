@@ -1,5 +1,5 @@
 {
-  "$comment": "Part II Section A criterion C59_OT (EA code 'eo-group') — 'Economic Operator together with others'. Response-only: INDICATOR answer gating (ONTRUE) the EO's role in the group (CODE, eo-role-type) + two DESCRIPTIONs, plus the evidence block. The role leaf carries a per-leaf `codelist: eo-role-type` (the generic CODE value type is codelist-agnostic). Shares EA code 'OT'; tag OT59 / id group-participation.",
+  "$comment": "Part II Section A criterion C59_OT (EA code 'eo-group') — 'Economic Operator together with others'. Response-only: INDICATOR answer gating (ONTRUE) the EO's role in the group (CODE, eo-role-type) + two DESCRIPTIONs, plus the evidence block. The role leaf carries a per-leaf `codelist: eo-role-type` (the generic CODE value type is codelist-agnostic). EA tag C59_OT / id group-participation.",
   "criterion": {
     "code": "eo-group",
     "tag": "C59_OT",

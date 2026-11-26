@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Documentation cleanup, so the sources read correctly outside the original working setup: the Part II README now describes the`OT` criteria as modelled (sidecars with their current `C<n>_OT` tags); pointers to a private notes repository and to`espd-demo` paths that no longer exist were removed or reworded (part READMEs, registry and sidecar comments, part manifests);
+  stale `OT<n>` tags in comments follow the current ones. Comments only: the published instance-data schemas, mappings and
+  compiled criteria are unchanged.
+
 - Registry status: `roles.json` and `scheme-agency-profile.json` carry `status` and `statusNote`. The role
   dispositions are `confirmed` (all exclusion categories mandatory for both buyer types, confirmed by the ESPD team);
   the scheme-agency policy is `provisional` until the ESPD profile owners confirm it. `validate.mjs` requires a note on
