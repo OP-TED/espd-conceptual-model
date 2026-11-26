@@ -4,8 +4,10 @@
   "title": "Role registry (implementer-neutral)",
   "description": "registries/roles.json. Buyer types and economic-operator roles with their exclusion-ground dispositions and UBL role mapping. Display text and per-role UI behaviour are NOT part of this registry.",
   "type": "object",
-  "required": ["parts", "exclusionCategories", "exclusionDispositions", "exclusionCategoryMap", "buyerTypes", "eoRoles"],
+  "required": ["status", "parts", "exclusionCategories", "exclusionDispositions", "exclusionCategoryMap", "buyerTypes", "eoRoles"],
   "properties": {
+    "status": { "enum": ["provisional", "confirmed"], "description": "provisional: still under review, not normative. confirmed: reviewed and agreed. A provisional registry needs a statusNote (checked by validate.mjs). The published README lists the provisional registries." },
+    "statusNote": { "type": "string", "minLength": 1 },
     "parts": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
     "exclusionCategories": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
     "exclusionDispositions": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },

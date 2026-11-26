@@ -50,7 +50,10 @@ for (const file of fs.readdirSync(registriesDir).sort()) {
   const where = `registries/${file}`;
   const schemaName = REGISTRY_SCHEMAS[file];
   if (!schemaName) { fail(where, 'no schema registered for this registry file'); continue; }
-  check(where, schemaOf(schemaName), read('registries', file));
+  const data = read('registries', file);
+  check(where, schemaOf(schemaName), data);
+  // A registry still under review has to say what is pending: the note is what the published README shows.
+  if (data.status === 'provisional' && !data.statusNote) fail(where, 'status is "provisional" but there is no statusNote saying what is pending');
 }
 for (const file of Object.keys(REGISTRY_SCHEMAS)) {
   if (!fs.existsSync(path.join(registriesDir, file))) fail(`registries/${file}`, 'expected registry file is missing');

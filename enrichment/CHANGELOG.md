@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Registry status: `roles.json` and `scheme-agency-profile.json` carry `status` and `statusNote`. The role
+  dispositions are `confirmed` (all exclusion categories mandatory for both buyer types, confirmed by the ESPD team);
+  the scheme-agency policy is `provisional` until the ESPD profile owners confirm it. `validate.mjs` requires a note on
+  a provisional registry. The README of the published model lists the provisional registries.
+
 - Added the administrative parts (I, II, VI) under `parts/`, copied from `espd-demo/model/parts`: per section the
   instance-data schema, example, UBL mapping and form, plus a manifest per part. Added `registries/ui-hints.json`
   (from `espd-demo/model/model-sources/registries`), the form vocabulary (`uiType`) and schemas for all of them

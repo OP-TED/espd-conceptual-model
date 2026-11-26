@@ -119,17 +119,22 @@ of the compiler.
 enrichment belongs to. The published `ESPD-EDM/model` envelope will record the structure
 version and the enrichment version it was built from.
 
+## Status of a registry
+
+A registry may carry `status` (`provisional` or `confirmed`) and a `statusNote`. `confirmed` records a
+decision (for example `roles.json`: all exclusion categories are mandatory for both buyer types, confirmed by the
+ESPD team). `provisional` means it is still under review and must not be read as normative; it needs a`statusNote` saying what is pending (`validate.mjs` checks that). The model compiler publishes the registries
+verbatim and lists the provisional ones in the README of `ESPD-EDM/model`, so the status travels with the data.
+
 ## Open TODOs
 
 - **`codelist-attributes.json` duplicates the Schematron.** Its attribute sets are copied
   verbatim from `espd-validation-schematron/common/sch/01-ESPD-common-cl-attributes.sch`. Generate
   one from the other so they cannot drift.
-- **Review `scheme-agency-profile.json`.** The agency choices, especially the default `OP` for
-  identifiers without a scheme field, are a pragmatic policy that satisfies BR-OTH-02. Have the
-  ESPD profile owners confirm them before they are treated as normative.
-- **Review `roles.json` dispositions.** Every exclusion category is currently `mandatory` for both
-  buyer types, although Art. 80(1) of Directive 2014/25/EU makes some of them conditional for
-  contracting entities (utilities).
+- **scheme-agency-profile.json is provisional.** The agency choices, especially the default `OP` for
+  identifiers without a scheme field, are a pragmatic policy that satisfies BR-OTH-02. The registry is marked
+  `status: provisional` (with a `statusNote`) and the published README of `ESPD-EDM/model` lists it as not
+  normative, until the ESPD profile owners confirm it. Then set `status` to `confirmed`.
 - **The instance-data shape becomes a published contract.** The `instanceBinding.path` values
   define the canonical instance JSON shape. Once the compiled model is published, that shape is
   shared by all implementers.
