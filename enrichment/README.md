@@ -62,6 +62,7 @@ Those stay in the consuming application (for the demo: `espd-demo/model/model-so
 | `registries/codelist-governance.json` | per codelist: its `.gc` file (present = shipped), aliases, whether the Schematron/CVA enforces it, whether the model inlines it as an enum, `excludedCodes`, `externalSource` |
 | `registries/ui-hints.json` | the closed vocabulary of form affordances (for example the TED notice lookup) a part form field may use in `uiHints` |
 | `parts/<part>/index.json` | manifest of an administrative part (I, II, VI): header keys and the order of its sections |
+| `docs/codelist-governance.md` | the axes of codelist governance (shipped, validated, inlined), the team's per-list decisions and what is checked where; explains `registries/codelist-governance.json` |
 | `parts/README.md`, `parts/<part>/README.md` | conventions and design notes of the parts (not published) |
 | `parts/<part>/section<L>.schema.json` | instance-data schema of the section |
 | `parts/<part>/section<L>.example.json` | an example instance; validated against the schema |

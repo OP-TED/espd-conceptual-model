@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added `docs/codelist-governance.md`, moved here from `espd-demo/docs` and made implementation-neutral: the registry it
+  explains lives here and is published with the model. The outdated proposal and migration sections and the pointers to a
+  private notes repository are gone. The enum sync of the administrative parts is now checked by
+  `espd-tools/model-compiler/parts-codelists.test.mjs` (every `$codelist` field against its `.gc` and the registry).
+
 - `validate.mjs`: reports a key that appears twice in one JSON object; the path check for part forms and mappings follows
   `allOf`, `anyOf`, `oneOf`, `if`, `then` and `else`, not only `$ref`. Both checks are in `checks.mjs` with tests (`npm test`).
 - Workflows: the export records the resolved espd-tools commit in `sourceRef`; `edm_branch` takes a plain branch name

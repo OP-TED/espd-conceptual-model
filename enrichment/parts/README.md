@@ -39,13 +39,15 @@ The vocabulary of the forms is closed: `uiType` is an enum in `../schema/parts-f
 - **Scope to the Schematron-mandated minimum**, then add optional fields deliberately. A field is `required`
   in the schema and the form if and only if a Schematron rule makes it fatal; warning-level and unconstrained
   fields are optional. Document the scoping choice so it is not mistaken for an omission.
-- **Code lists** follow `docs/codelist-governance.md` in `espd-demo` and `registries/codelist-governance.json`
-  here: a code field carries a `$codelist` / `codelist` marker; small lists are inlined as an enum (with
+- **Code lists** follow [`../docs/codelist-governance.md`](../docs/codelist-governance.md) and `registries/codelist-governance.json`:
+  a code field carries a `$codelist` / `codelist` marker; small lists are inlined as an enum (with
   `$codelistEnumIsImplementerChoice` if and only if not Schematron-validated), large lists are referenced by
   name. The enums are derived from the `.gc` files and must stay in sync with them.
 - **Attribute sets** on code and identifier elements come from the codelist-attribute profile
   (`registries/codelist-attributes.json`) and expand through the shared expansion step.
-- **Checks.** `validate.mjs` checks the files and their cross-references (see the enrichment README). The
-  tests that need the mapping engine and the code lists (map and unmap round trip, UBL structure against
-  `ESPD-Request-BASE.xml`, Schematron attribute sets, enum sync with the `.gc`) live with the consumer, in
-  `espd-demo/model/parts-tests/`, and run against the published copy.
+- **Checks.** `validate.mjs` checks the files and their cross-references (see the enrichment README). The enum
+  sync with the `.gc` files is checked for every code list field by `espd-tools/model-compiler/parts-codelists.test.mjs`,
+  (it needs the shipped code lists, so it runs with the compiler's tests). The tests that need a mapping engine (map and unmap round trip, UBL
+  structure against `ESPD-Request-BASE.xml`, Schematron attribute sets) live with the consumer, in
+  `espd-demo/model/parts-tests/`, and run against the published copy; moving them needs the mapping engine to
+  move to a shared place first.
