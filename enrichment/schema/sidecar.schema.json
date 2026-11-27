@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/sidecar.schema.json",
+  "title": "Criterion enrichment sidecar",
+  "description": "criteria/<code>.sidecar.json. Joins stable semantic IDs and instance-data bindings to the structural nodes of one criterion in espd-edm.json, keyed by the node's requestpath. A criterion is 'modeled' when it has a sidecar. Keys starting with '$' are annotations.",
+  "type": "object",
+  "required": ["criterion", "components"],
+  "properties": {
+    "criterion": {
+      "type": "object",
+      "required": ["code", "id", "instanceModel"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1, "description": "Criterion code as in espd-edm.json (e.g. slc-stand-to-gen). Must equal the file name stem." },
+        "id": { "type": "string", "minLength": 1, "description": "Stable semantic id of the criterion." },
+        "tag": { "type": "string", "description": "EA tag of the criterion root (e.g. C29), where it cannot be derived." },
+        "instanceModel": {
+          "type": "object",
+          "required": ["containerPath", "key"],
+          "properties": {
+            "containerPath": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "description": "Path of the container object in the instance document that holds this criterion (first segment names the part, e.g. partIV)."
+            },
+            "key": {
+              "type": "object",
+              "required": ["source"],
+              "properties": { "source": { "enum": ["code", "id"], "description": "Which criterion field names the criterion's key inside the container." } },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "components": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Keyed by the structural node's requestpath.",
+      "additionalProperties": { "$ref": "#/definitions/component" }
+    },
+    "branchSelectors": {
+      "type": "object",
+      "description": "Optional: selectors for criteria whose response shape depends on a chosen branch."
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false,
+  "definitions": {
+    "component": {
+      "type": "object",
+      "required": ["id", "instanceBinding"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "Stable semantic id of the node; unique across all sidecars." },
+        "instanceBinding": {
+          "type": "object",
+          "required": ["side", "path"],
+          "properties": {
+            "side": { "enum": ["requirement", "response"], "description": "Whether the node is authored by the buyer (request) or answered by the economic operator (response)." },
+            "path": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "Path of the value inside the criterion's instance object." },
+            "repeatable": { "type": "boolean", "description": "On a group binding: the group is a 0..n array container." }
+          },
+          "additionalProperties": false
+        },
+        "codelist": { "type": "string", "minLength": 1, "description": "Per-leaf codelist name for generic CODE value types." },
+        "requestValue": {
+          "type": "object",
+          "description": "Override of how the buyer-side value is serialised in the Request XML.",
+          "properties": {
+            "element": { "type": "string" },
+            "const": {},
+            "attributes": { "type": "object" },
+            "valueMap": { "type": "object" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "patternProperties": { "^\\$": {} },
+      "additionalProperties": false
+    }
+  }
+}

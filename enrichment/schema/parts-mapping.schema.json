@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/parts-mapping.schema.json",
+  "title": "Administrative part section XML mapping",
+  "description": "parts/<part>/section<Letter>.mapping.json. The authoritative format is espd-tools/model-compiler/schema/mapping.schema.json, which the compiler validates every published mapping against; this schema is the authoring check. Maps the section's instance data to UBL elements (and back). A rule is either a leaf (from, to) or a repeating record (records, forEach, item).",
+  "type": "object",
+  "required": ["target", "rules"],
+  "properties": {
+    "target": {
+      "type": "object",
+      "required": ["root", "namespaces"],
+      "properties": {
+        "root": { "type": "string", "minLength": 1 },
+        "namespaces": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string", "minLength": 1 } }
+      },
+      "patternProperties": { "^\\$": {} },
+      "additionalProperties": false
+    },
+    "rules": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/rule" } }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false,
+  "definitions": {
+    "attributes": {
+      "type": "object",
+      "description": "XML attributes. A value is a constant, a data path ({ from }), or { fromMap: { path?, profile } }: looked up in a named profile (the published scheme-agency-profile) at export.",
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["from"],
+            "properties": { "from": { "type": "string", "minLength": 1, "description": "An instance data path whose value is the attribute." } },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["fromMap"],
+            "properties": {
+              "fromMap": {
+                "type": "object",
+                "required": ["profile"],
+                "properties": {
+                  "path": { "type": "string", "minLength": 1, "description": "An instance data path whose value selects the profile entry. Without it the profile default applies." },
+                  "profile": { "type": "string", "minLength": 1 }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "rule": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["from", "to"],
+          "properties": {
+            "from": { "type": "string", "minLength": 1 },
+            "to": { "type": "string", "minLength": 1 },
+            "attributes": { "$ref": "#/definitions/attributes" }
+          },
+          "patternProperties": { "^\\$": {} },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["records", "forEach", "item"],
+          "properties": {
+            "records": { "type": "string", "minLength": 1 },
+            "forEach": { "type": "string", "minLength": 1 },
+            "item": {
+              "type": "object",
+              "properties": {
+                "path": { "type": "string", "minLength": 1 },
+                "attributes": { "$ref": "#/definitions/attributes" },
+                "fields": { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/rule" } }
+              },
+              "patternProperties": { "^\\$": {} },
+              "additionalProperties": false
+            }
+          },
+          "patternProperties": { "^\\$": {} },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

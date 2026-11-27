@@ -22,7 +22,7 @@ on:
         default: 'develop'
         type: string
       edm_branch:
-        description: 'ESPD-EDM branch to publish to (never main). Leave empty to use the branch this workflow runs from.'
+        description: 'ESPD-EDM branch to publish to (never main), as a plain branch name (for example release/5.0.0, not refs/heads/...). Leave empty to use the branch this workflow runs from.'
         required: false
         default: ''
         type: string
@@ -57,8 +57,13 @@ jobs:
         env:
           INPUT_EDM_BRANCH: ${{ inputs.edm_branch }}
         run: |
+          # A plain branch name only: the concurrency group above is built from the raw input, so two spellings
+          # of one branch ("x" and "refs/heads/x") would get different groups and could race on the push.
+          if [[ "${INPUT_EDM_BRANCH}" == refs/* ]]; then
+            echo "::error::edm_branch takes a plain branch name (for example release/5.0.0), not \"${INPUT_EDM_BRANCH}\"."
+            exit 1
+          fi
           target="${INPUT_EDM_BRANCH:-${RUN_BRANCH}}"
-          target="${target#refs/heads/}"
           echo "RUN_BRANCH=${RUN_BRANCH}"
           echo "VALIDATION_REF=${VALIDATION_REF}"
           echo "EDM_BRANCH=${target}"

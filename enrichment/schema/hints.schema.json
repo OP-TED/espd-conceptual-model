@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/hints.schema.json",
+  "title": "Criterion instance-data constraint hints",
+  "description": "criteria/<code>.hints.json. Optional constraints on the generated instance-data schema that the EA model cannot express, keyed by semantic id. Keys starting with '$' are annotations.",
+  "type": "object",
+  "properties": {
+    "leafConstraints": {
+      "type": "object",
+      "description": "Per-leaf JSON Schema refinements merged into the generated shape (e.g. { \"minimum\": 1 }).",
+      "patternProperties": { "^\\$": {} },
+      "additionalProperties": { "type": "object" }
+    },
+    "leafShapes": {
+      "type": "object",
+      "description": "Per-leaf overrides of the instance shape (e.g. { \"type\": \"boolean\" }).",
+      "patternProperties": { "^\\$": {} },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "enum": { "type": "array" }
+        }
+      }
+    },
+    "optionalLeaves": {
+      "type": "object",
+      "properties": { "ids": { "type": "array", "items": { "type": "string" } } },
+      "additionalProperties": false,
+      "description": "Semantic ids of leaves relaxed to optional despite EA cardinality."
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}

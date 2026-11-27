@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/codelist-governance.schema.json",
+  "title": "Codelist governance (implementer-neutral)",
+  "description": "registries/codelist-governance.json. Per codelist: the .gc file that carries it (absent means not shipped), its aliases, whether the Schematron/CVA enforces its value set, whether the model inlines its values as an enum in the instance-data schemas, and any ESPD profile narrowing. 'Shipped' is derived (gc present). UI use is each implementation's own decision.",
+  "type": "object",
+  "required": ["codelists"],
+  "properties": {
+    "$todo": { "type": "string" },
+    "$axes": { "type": "object" },
+    "codelists": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["schematronValidated", "inlineEnum"],
+        "properties": {
+          "gc": { "type": "string", "pattern": "^[A-Za-z0-9_-]+\\.gc$", "description": "The Genericode file under ESPD-EDM/codelists/. Present means shipped." },
+          "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true, "description": "Other names the list is known by (case-insensitive)." },
+          "schematronValidated": { "type": "boolean", "description": "The CVA/Schematron enforces the value set." },
+          "inlineEnum": { "type": "boolean", "description": "The published instance-data schemas inline the values as an enum." },
+          "excludedCodes": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true, "description": "Codes present in the .gc that are not valid in the ESPD context (an ESPD profile narrowing of a shared table)." },
+          "externalSource": { "type": "string", "pattern": "^https?://", "description": "Where an unshipped list comes from." }
+        },
+        "patternProperties": { "^\\$": {} },
+        "additionalProperties": false
+      }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}

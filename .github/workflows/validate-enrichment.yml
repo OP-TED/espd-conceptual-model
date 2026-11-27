@@ -1,0 +1,49 @@
+name: Validate enrichment
+
+# Checks the enrichment sources (registries and criterion sidecars) against their
+# JSON Schemas and the cross-file rules in enrichment/validate.mjs. It only reads
+# this repository, so it needs no token and can run on every change to enrichment/.
+# Whether the enrichment still fits the EA structure is checked later, when the model
+# is compiled by "Export & publish to ESPD-EDM" (the overlay fails on a path that is not
+# in the structure, a leaf without an entry, and so on).
+
+on:
+  pull_request:
+    paths:
+      - 'enrichment/**'
+      - '.github/workflows/validate-enrichment.yml'
+  # Pushes only to the long-lived branches: a pull request already runs the check on every commit of its
+  # branch, so a push trigger on feature branches would run it twice.
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+    paths:
+      - 'enrichment/**'
+      - '.github/workflows/validate-enrichment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: enrichment/package-lock.json
+
+      - name: Validate
+        working-directory: enrichment
+        run: |
+          npm ci
+          npm run validate
+          npm test

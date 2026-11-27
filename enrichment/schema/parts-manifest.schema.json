@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/parts-manifest.schema.json",
+  "title": "Administrative part manifest",
+  "description": "parts/<part>/index.json. The part header and the explicit order of its sections. The sections are the files section<Letter>.{schema,example,mapping,form}.json next to it.",
+  "type": "object",
+  "required": ["part", "titleKey", "descriptionKey", "filledBy", "sections"],
+  "properties": {
+    "part": { "type": "string", "enum": ["I", "II", "VI"] },
+    "titleKey": { "type": "string", "minLength": 1 },
+    "descriptionKey": { "type": "string", "minLength": 1 },
+    "shortKey": { "type": "string", "minLength": 1 },
+    "filledBy": { "type": "string", "minLength": 1 },
+    "sections": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z]$" } }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}

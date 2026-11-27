@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/ui-hints.schema.json",
+  "title": "UI hints vocabulary",
+  "description": "registries/ui-hints.json. The closed vocabulary of declarative presentation affordances a part form field may carry in its uiHints block (see parts-form.schema.json), with the contract of each. Hints never change the data shape and are safe for a renderer to ignore.",
+  "type": "object",
+  "required": ["lookups"],
+  "properties": {
+    "lookups": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["label", "labelKey", "reads", "prefills", "failureMode"],
+        "properties": {
+          "label": { "type": "string", "minLength": 1 },
+          "labelKey": { "type": "string", "minLength": 1 },
+          "reads": {
+            "type": "object",
+            "required": ["inputKinds"],
+            "properties": {
+              "inputKinds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+            },
+            "patternProperties": { "^\\$": {} },
+            "additionalProperties": false
+          },
+          "prefills": {
+            "type": "object",
+            "required": ["dataPaths"],
+            "properties": {
+              "dataPaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^part[IVX]+\\." } }
+            },
+            "patternProperties": { "^\\$": {} },
+            "additionalProperties": false
+          },
+          "failureMode": {
+            "type": "object",
+            "required": ["fieldsRemainEditable"],
+            "properties": { "fieldsRemainEditable": { "type": "boolean" } },
+            "patternProperties": { "^\\$": {} },
+            "additionalProperties": false
+          }
+        },
+        "patternProperties": { "^\\$": {} },
+        "additionalProperties": false
+      }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}

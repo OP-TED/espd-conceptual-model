@@ -1,0 +1,38 @@
+{
+  "$comment": "Part II Section D criterion C61_OT (EA code 'subco-ent') — 'Subcontracted entities'. Response-only: INDICATOR answer gating (ONTRUE) a REPEATABLE group (QSG1, 0..n) of subcontractors, each with a name (DESCRIPTION) and id (ECONOMIC_OPERATOR_IDENTIFIER), plus the evidence block. Same shape as C60_OT. EA tag C61_OT / id subcontractors.",
+  "criterion": {
+    "code": "subco-ent",
+    "tag": "C61_OT",
+    "id": "subcontractors",
+    "instanceModel": {
+      "containerPath": ["partII", "economicOperatorCriteria"],
+      "key": { "source": "id" }
+    }
+  },
+  "components": {
+    "C61_OT_subco-ent/QG1/Q1": {
+      "id": "subcontractors.answer",
+      "instanceBinding": { "side": "response", "path": ["answer"] }
+    },
+    "C61_OT_subco-ent/QG1/QSG1": {
+      "id": "subcontractors.entities",
+      "instanceBinding": { "side": "response", "path": ["subcontractors"], "repeatable": true }
+    },
+    "C61_OT_subco-ent/QG1/QSG1/Q1": {
+      "id": "subcontractors.name",
+      "instanceBinding": { "side": "response", "path": ["subcontractors", "name"] }
+    },
+    "C61_OT_subco-ent/QG1/QSG1/Q2": {
+      "id": "subcontractors.id",
+      "instanceBinding": { "side": "response", "path": ["subcontractors", "id"] }
+    },
+    "C61_OT_subco-ent/QG2/Q1": {
+      "id": "subcontractors.evidence-available-electronically",
+      "instanceBinding": { "side": "response", "path": ["electronicEvidence", "availableElectronically"] }
+    },
+    "C61_OT_subco-ent/QG2/QSG1/Q1": {
+      "id": "subcontractors.evidence-id",
+      "instanceBinding": { "side": "response", "path": ["electronicEvidence", "evidence"] }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$comment": "Part V criterion C63_OT (EA code 'staff-red') — 'Reduction of the number of qualified candidates'. The sole Part V criterion. Response-only, INDICATOR answer + conditional DESCRIPTION + the standard electronic-evidence block. The seven Part II/V criteria are keyed ot-<id>; `criterion.tag` is the EA tag (C63_OT here), and `criterion.id` is a distinct semantic id used as the instance key (key.source: 'id', not 'code').",
+
+  "criterion": {
+    "code": "staff-red",
+    "tag": "C63_OT",
+    "id": "reduction-of-candidates",
+    "instanceModel": {
+      "containerPath": ["partV", "otherCriteria"],
+      "key": { "source": "id" }
+    }
+  },
+  "components": {
+    "C63_OT_staff-red/QG1/Q1": {
+      "id": "reduction-of-candidates.answer",
+      "instanceBinding": { "side": "response", "path": ["answer"] }
+    },
+    "C63_OT_staff-red/QG1/QSG1/Q1": {
+      "id": "reduction-of-candidates.description",
+      "instanceBinding": { "side": "response", "path": ["description"] }
+    },
+    "C63_OT_staff-red/QG2/Q1": {
+      "id": "reduction-of-candidates.evidence-available-electronically",
+      "instanceBinding": { "side": "response", "path": ["electronicEvidence", "availableElectronically"] }
+    },
+    "C63_OT_staff-red/QG2/QSG1/Q1": {
+      "id": "reduction-of-candidates.evidence-id",
+      "instanceBinding": { "side": "response", "path": ["electronicEvidence", "evidence"] }
+    }
+  }
+}

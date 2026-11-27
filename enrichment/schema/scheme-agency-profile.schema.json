@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/scheme-agency-profile.schema.json",
+  "title": "Scheme-agency profile",
+  "description": "registries/scheme-agency-profile.json. Single source of truth for the UBL @schemeAgencyID derived on party/reference cbc:ID elements (BR-OTH-02). The policy is provisional until the ESPD profile owners confirm it (see status).",
+  "type": "object",
+  "required": ["profiles", "status"],
+  "properties": {
+    "status": { "enum": ["provisional", "confirmed"], "description": "provisional: still under review, not normative. confirmed: reviewed and agreed. A provisional registry needs a statusNote (checked by validate.mjs). The published README lists the provisional registries." },
+    "statusNote": { "type": "string", "minLength": 1 },
+    "profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["default"],
+        "properties": {
+          "default": { "type": "string", "minLength": 1 },
+          "map": { "type": "object", "additionalProperties": { "type": "string", "minLength": 1 } }
+        },
+        "patternProperties": { "^\\$": {} },
+        "additionalProperties": false
+      }
+    }
+  },
+  "patternProperties": { "^\\$": {} },
+  "additionalProperties": false
+}
