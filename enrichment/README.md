@@ -116,8 +116,7 @@ may need matching entries (a test in the demo lists any that are missing).
 
 The `source` paths inside `registries/value-types.json` and `registries/codelist-attributes.json`
 are relative to this folder and assume the sibling-checkout layout (`ESPD-EDM`,
-`espd-validation-schematron` next to this repository). They are meant to become explicit inputs
-of the compiler.
+`espd-validation-schematron` next to this repository). See the TODO "Registry `source` paths" below.
 
 ## Versioning
 
@@ -129,7 +128,7 @@ version and the enrichment version it was built from.
 
 A registry may carry `status` (`provisional` or `confirmed`) and a `statusNote`. `confirmed` records a
 decision (for example `roles.json`: all exclusion categories are mandatory for both buyer types, confirmed by the
-ESPD team). `provisional` means it is still under review and must not be read as normative; it needs a`statusNote` saying what is pending (`validate.mjs` checks that). The model compiler publishes the registries
+ESPD team). `provisional` means it is still under review and must not be read as normative; it needs a `statusNote` saying what is pending (`validate.mjs` checks that). The model compiler publishes the registries
 verbatim and lists the provisional ones in the README of `ESPD-EDM/model`, so the status travels with the data.
 
 ## Open TODOs
@@ -153,3 +152,22 @@ verbatim and lists the provisional ones in the README of `ESPD-EDM/model`, so th
   but is not on the 5.0.0 branches. Add `node verify.mjs --model model --edm criterion/espd-edm.json` (espd-tools/model-compiler)
   there: it checks the envelope against its schema, that every listed file exists, that nothing stray or hand-edited lingers, and that
   the model was built from the structure file in the same commit.
+- **TODO: registry `source` paths.** `registries/value-types.json` (`source.path`) and
+  `registries/codelist-attributes.json` (`source.schematron`) record where they come from as relative paths into
+  sibling checkouts of ESPD-EDM and espd-validation-schematron. Nothing reads them; `espd-tools/model-compiler/publish.mjs`
+  rewrites them at publication (`SOURCE_PATCHES`, which fails the build if the expected text is missing). Replace them
+  with a repository-neutral reference (repository name and path, for example
+  `{ "repository": "ESPD-EDM", "path": "codelists/ResponseDataType.gc" }`), update the two schemas, publish the
+  registries verbatim and delete `SOURCE_PATCHES`. Open: whether to record a version or hash of the source as well.
+  Done when no registry contains a `../` path to another repository and `verify.mjs` still passes.
+- **TODO: the export workflow creates a missing ESPD-EDM branch from the default branch** when `edm_branch` is empty
+  (`export-update-edm.yml`, step "Switch/Create branch in ESPD-EDM"). With `edm_branch` given the branch has to exist,
+  because the default branch carries a different release's layout; the empty case is kept for backward compatibility.
+  Options: require the branch to exist in both cases (as `publish-validation.yml` does), add an `edm_base_branch`
+  input that is required when the target does not exist, or keep it and document it. Done when a run can no longer
+  base a new branch on the default branch implicitly.
+- **TODO: the mapping engine and the tests that need it live in `espd-demo`.** The round trip, UBL structure and
+  Schematron attribute tests of the parts, and the round trip of every published example, need the mapping engine
+  (`espd-demo/model/mapping-engine`), so they run only in the demo. They should run against the published model from
+  `espd-tools`, see "Open TODOs" in `espd-tools/model-compiler/README.md`. The enum sync of the parts already
+  runs in the compiler (`parts-codelists.test.mjs`).

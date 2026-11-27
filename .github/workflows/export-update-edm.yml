@@ -151,6 +151,11 @@ jobs:
       # release's layout, and the export would land on the wrong content. Without
       # edm_branch the branch named like the run branch is created when missing, as
       # before.
+      #
+      # TODO: that creation still bases the new branch on ESPD-EDM's default branch, the case
+      # the paragraph above warns about. Require the branch to exist in both cases (as
+      # publish-validation.yml does), or add a base-branch input that is required when it is
+      # missing. Tracked in enrichment/README.md ("Open TODOs").
       - name: Switch/Create branch in ESPD-EDM
         working-directory: espd-edm
         run: |

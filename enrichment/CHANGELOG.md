@@ -13,7 +13,7 @@
   (`refs/...` is rejected, so the concurrency group is exact); `validate-enrichment.yml` runs on push only for `main`,
   `develop` and `release/**` (a pull request already runs it per commit) and also runs `npm test`.
 
-- Documentation cleanup, so the sources read correctly outside the original working setup: the Part II README now describes the`OT` criteria as modelled (sidecars with their current `C<n>_OT` tags); pointers to a private notes repository and to`espd-demo` paths that no longer exist were removed or reworded (part READMEs, registry and sidecar comments, part manifests);
+- Documentation cleanup, so the sources read correctly outside the original working setup: the Part II README now describes the `OT` criteria as modelled (sidecars with their current `C<n>_OT` tags); pointers to a private notes repository and to `espd-demo` paths that no longer exist were removed or reworded (part READMEs, registry and sidecar comments, part manifests);
   stale `OT<n>` tags in comments follow the current ones. Comments only: the published instance-data schemas, mappings and
   compiled criteria are unchanged.
 
