@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/OP-TED/espd-conceptual-model/enrichment/schema/parts-mapping.schema.json",
   "title": "Administrative part section XML mapping",
-  "description": "parts/<part>/section<Letter>.mapping.json. Maps the section's instance data to UBL elements (and back). A rule is either a leaf (from, to) or a repeating record (records, forEach, item).",
+  "description": "parts/<part>/section<Letter>.mapping.json. The authoritative format is espd-tools/model-compiler/schema/mapping.schema.json, which the compiler validates every published mapping against; this schema is the authoring check. Maps the section's instance data to UBL elements (and back). A rule is either a leaf (from, to) or a repeating record (records, forEach, item).",
   "type": "object",
   "required": ["target", "rules"],
   "properties": {
