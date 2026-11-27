@@ -117,8 +117,9 @@ jobs:
       # Compiles the published ESPD model (ESPD-EDM/model) from the export just
       # produced plus the enrichment in this repository (enrichment/). It runs before
       # ESPD-EDM is checked out on purpose: a model that does not compile, including
-      # enrichment that has drifted from the EA structure (the structural-equivalence
-      # gate), stops the run before anything is written to ESPD-EDM. The compiler
+      # enrichment that has drifted from the EA structure (a sidecar path that is not in
+      # the structure, a leaf without an entry, ...), stops the run before anything is
+      # written to ESPD-EDM. The compiler
       # reads the code lists exported above, so structure, code lists and model all
       # come from the same run. Needs an espd-tools ref that contains model-compiler.
       #

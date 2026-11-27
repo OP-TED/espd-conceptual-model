@@ -1,0 +1,4 @@
+# The enrichment sources are published as they are. Checking JSON out with LF everywhere (a Windows
+# checkout with core.autocrlf would otherwise turn it into CRLF) makes a local build give the same
+# bytes as the build in CI.
+*.json text eol=lf

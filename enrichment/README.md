@@ -14,8 +14,9 @@ EA model (ESPD_CM.eapx)  --export-->  espd-edm.json  --+
 enrichment/ (this folder)  ----------------------------+
 ```
 
-The model compiler (`espd-tools/model-compiler`) joins the
-two inputs and gates on structural equivalence, so enrichment that drifts from a changed EA
+The model compiler (`espd-tools/model-compiler`) joins the two inputs. While it overlays a sidecar on the
+structure it fails on anything that no longer fits: a sidecar path that is not in the structure, a value leaf
+without an entry, an entry no leaf uses, a duplicate semantic id. So enrichment that drifts from a changed EA
 structure fails the build instead of silently diverging.
 
 ## Why JSON next to a binary model

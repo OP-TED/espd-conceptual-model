@@ -4,7 +4,8 @@ name: Validate enrichment
 # JSON Schemas and the cross-file rules in enrichment/validate.mjs. It only reads
 # this repository, so it needs no token and can run on every change to enrichment/.
 # Whether the enrichment still fits the EA structure is checked later, when the model
-# is compiled by "Export & publish to ESPD-EDM" (the structural-equivalence gate).
+# is compiled by "Export & publish to ESPD-EDM" (the overlay fails on a path that is not
+# in the structure, a leaf without an entry, and so on).
 
 on:
   pull_request:
